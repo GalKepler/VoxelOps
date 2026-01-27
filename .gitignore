@@ -50,3 +50,5 @@ logs/
 # Development
 .mypy_cache/
 .ruff_cache/
+
+heuristic.py

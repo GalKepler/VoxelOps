@@ -85,10 +85,11 @@ class QSIPrepDefaults:
         docker_image: Docker image to use
     """
     nprocs: int = 8
-    mem_gb: int = 16
+    mem_mb: int = 16000
     output_resolution: float = 1.6
-    output_spaces: List[str] = field(default_factory=lambda: ["MNI152NLin2009cAsym"])
-    longitudinal: bool = True
+    anatomical_template: List[str] = field(default_factory=lambda: ["MNI152NLin2009cAsym"])
+    longitudinal: bool = False
+    subject_anatomical_reference: str = "unbiased"
     skip_bids_validation: bool = False
     fs_license: Optional[Path] = None
     docker_image: str = "pennlinc/qsiprep:1.0.2"

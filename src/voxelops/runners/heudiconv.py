@@ -1,5 +1,6 @@
 """HeudiConv DICOM to BIDS converter runner."""
 
+import os
 from pathlib import Path
 from typing import Dict, Optional, Any
 
@@ -10,6 +11,7 @@ from voxelops.schemas.heudiconv import (
     HeudiconvDefaults,
 )
 from voxelops.exceptions import InputValidationError
+from voxelops.utils.bids import post_process_heudiconv_output
 
 
 def run_heudiconv(
@@ -60,6 +62,7 @@ def run_heudiconv(
     # Apply overrides
     for key, value in overrides.items():
         if hasattr(config, key):
+            print(f"Overriding config.{key} with value: {value}")
             setattr(config, key, value)
 
     # Validate inputs
@@ -82,15 +85,20 @@ def run_heudiconv(
     expected_outputs = HeudiconvOutputs.from_inputs(inputs, output_dir)
 
     # Build Docker command
+    # Get current user/group IDs to avoid permission issues
+    uid = os.getuid()
+    gid = os.getgid()
+
     cmd = [
         "docker", "run", "--rm",
+        "--user", f"{uid}:{gid}",
         "-v", f"{inputs.dicom_dir}:/dicom:ro",
         "-v", f"{output_dir}:/output",
         "-v", f"{config.heuristic}:/heuristic.py:ro",
         config.docker_image,
         "--files", "/dicom",
         "--outdir", "/output",
-        "--subjs", inputs.participant,
+        "--subjects", inputs.participant,
         "--converter", config.converter,
         "--heuristic", "/heuristic.py",
     ]
@@ -104,6 +112,14 @@ def run_heudiconv(
     if config.bids_validator:
         cmd.append("--bids")
 
+    if config.bids:
+        cmd.extend(["--bids", config.bids])
+
+    if config.grouping:
+        cmd.extend(["--grouping", config.grouping])
+
+    if config.overwrite:
+        cmd.append("--overwrite")
     # Execute
     log_dir = output_dir.parent / "logs"
     result = run_docker(
@@ -112,6 +128,36 @@ def run_heudiconv(
         participant=inputs.participant,
         log_dir=log_dir,
     )
+
+    # Post-processing steps
+    if result['success'] and config.post_process:
+        print(f"\n{'='*80}")
+        print(f"Running post-HeudiConv processing for participant {inputs.participant}")
+        print(f"{'='*80}\n")
+
+        try:
+            post_result = post_process_heudiconv_output(
+                bids_dir=output_dir,
+                participant=inputs.participant,
+                session=inputs.session,
+                dry_run=config.post_process_dry_run,
+            )
+            result['post_processing'] = post_result
+
+            if not post_result['success']:
+                print("\n⚠ Post-processing completed with warnings:")
+                for error in post_result.get('errors', []):
+                    print(f"  - {error}")
+            else:
+                print("\n✓ Post-processing completed successfully")
+
+        except Exception as e:
+            print(f"\n⚠ Post-processing failed: {e}")
+            result['post_processing'] = {
+                'success': False,
+                'error': str(e)
+            }
+            # Don't fail the entire conversion if post-processing fails
 
     # Add inputs, config, and expected outputs to result
     result['inputs'] = inputs

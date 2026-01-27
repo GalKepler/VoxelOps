@@ -1,5 +1,6 @@
 """QSIPrep diffusion preprocessing runner."""
 
+import os
 from pathlib import Path
 from typing import Dict, Optional, Any
 
@@ -76,8 +77,13 @@ def run_qsiprep(
     expected_outputs = QSIPrepOutputs.from_inputs(inputs, output_dir, work_dir)
 
     # Build Docker command
+    # Get current user/group IDs to avoid permission issues
+    uid = os.getuid()
+    gid = os.getgid()
+
     cmd = [
         "docker", "run", "--rm",
+        "--user", f"{uid}:{gid}",
         "-v", f"{inputs.bids_dir}:/data:ro",
         "-v", f"{output_dir}:/out",
         "-v", f"{work_dir}:/work",
@@ -93,26 +99,30 @@ def run_qsiprep(
     # QSIPrep arguments
     cmd.extend([
         "/data", "/out", "participant",
-        f"--participant-label={inputs.participant}",
-        f"--nprocs={config.nprocs}",
-        f"--mem-gb={config.mem_gb}",
-        f"--output-resolution={config.output_resolution}",
-        "--work-dir=/work",
+        f"--participant-label {inputs.participant}",
+        f"--output-resolution {config.output_resolution}",
+        f"--nprocs {config.nprocs}",
+        f"--mem-mb {config.mem_mb}",
+        "--work-dir /work",
     ])
 
     # Output spaces
-    for space in config.output_spaces:
-        cmd.append(f"--output-space={space}")
+    for space in config.anatomical_template:
+        cmd.append(f"--anatomical-template {space}")
 
     # Optional flags
     if config.longitudinal:
         cmd.append("--longitudinal")
+    
+    # Optional subject anatomical reference
+    if hasattr(config, 'subject_anatomical_reference'):
+        cmd.append(f"--subject-anatomical-reference {config.subject_anatomical_reference}")
 
     if config.skip_bids_validation:
         cmd.append("--skip-bids-validation")
 
     if config.fs_license and config.fs_license.exists():
-        cmd.append("--fs-license-file=/license.txt")
+        cmd.append("--fs-license-file /license.txt")
 
     # Execute
     log_dir = output_dir.parent / "logs"

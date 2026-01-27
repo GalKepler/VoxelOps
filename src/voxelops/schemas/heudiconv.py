@@ -19,6 +19,7 @@ class HeudiconvInputs:
     participant: str
     output_dir: Optional[Path] = None
     session: Optional[str] = None
+    heuristic: Optional[Path] = None
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -77,7 +78,12 @@ class HeudiconvDefaults:
     bids_validator: bool = True
     overwrite: bool = False
     converter: str = "dcm2niix"
-    docker_image: str = "nipy/heudiconv:latest"
+    bids: Optional[str] = "notop"
+    grouping: Optional[str] = "all"
+    docker_image: str = "nipy/heudiconv:1.3.4"
+    # Post-processing options
+    post_process: bool = True  # Enable post-heudiconv processing
+    post_process_dry_run: bool = False  # Test mode - report only, don't modify
 
     def __post_init__(self):
         """Ensure heuristic path is Path object if provided."""
