@@ -1,0 +1,99 @@
+"""QSIPrep schemas: inputs, outputs, and defaults."""
+
+from dataclasses import dataclass, field
+from pathlib import Path
+from typing import Optional, List
+
+
+@dataclass
+class QSIPrepInputs:
+    """Required inputs for QSIPrep diffusion preprocessing.
+
+    Attributes:
+        bids_dir: BIDS dataset directory
+        participant: Participant label (without 'sub-' prefix)
+        output_dir: Output directory (optional, defaults to bids_dir/../derivatives/qsiprep)
+        work_dir: Working directory (optional, defaults to output_dir/../work/qsiprep)
+    """
+    bids_dir: Path
+    participant: str
+    output_dir: Optional[Path] = None
+    work_dir: Optional[Path] = None
+
+    def __post_init__(self):
+        """Ensure paths are Path objects."""
+        self.bids_dir = Path(self.bids_dir)
+        if self.output_dir:
+            self.output_dir = Path(self.output_dir)
+        if self.work_dir:
+            self.work_dir = Path(self.work_dir)
+
+
+@dataclass
+class QSIPrepOutputs:
+    """Expected outputs from QSIPrep.
+
+    Attributes:
+        qsiprep_dir: QSIPrep output directory
+        participant_dir: Participant-specific directory
+        html_report: HTML report file
+        work_dir: Working directory
+        figures_dir: QC figures directory
+    """
+    qsiprep_dir: Path
+    participant_dir: Path
+    html_report: Path
+    work_dir: Path
+    figures_dir: Path
+
+    @classmethod
+    def from_inputs(cls, inputs: QSIPrepInputs, output_dir: Path, work_dir: Path):
+        """Generate expected output paths from inputs.
+
+        Args:
+            inputs: QSIPrepInputs instance
+            output_dir: Resolved output directory
+            work_dir: Resolved work directory
+
+        Returns:
+            QSIPrepOutputs with expected paths
+        """
+        qsiprep_dir = output_dir / "qsiprep"
+        participant_dir = qsiprep_dir / f"sub-{inputs.participant}"
+
+        return cls(
+            qsiprep_dir=qsiprep_dir,
+            participant_dir=participant_dir,
+            html_report=qsiprep_dir / f"sub-{inputs.participant}.html",
+            work_dir=work_dir,
+            figures_dir=participant_dir / "figures",
+        )
+
+
+@dataclass
+class QSIPrepDefaults:
+    """Default configuration for QSIPrep (brain bank standards).
+
+    Attributes:
+        nprocs: Number of parallel processes
+        mem_gb: Memory limit in GB
+        output_resolution: Output resolution in mm
+        output_spaces: List of output spaces
+        longitudinal: Enable longitudinal processing
+        skip_bids_validation: Skip BIDS validation
+        fs_license: Path to FreeSurfer license file
+        docker_image: Docker image to use
+    """
+    nprocs: int = 8
+    mem_gb: int = 16
+    output_resolution: float = 1.6
+    output_spaces: List[str] = field(default_factory=lambda: ["MNI152NLin2009cAsym"])
+    longitudinal: bool = True
+    skip_bids_validation: bool = False
+    fs_license: Optional[Path] = None
+    docker_image: str = "pennlinc/qsiprep:1.0.2"
+
+    def __post_init__(self):
+        """Ensure fs_license is Path object if provided."""
+        if self.fs_license:
+            self.fs_license = Path(self.fs_license)

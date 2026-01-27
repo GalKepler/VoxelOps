@@ -1,0 +1,13 @@
+# uv ignore file - exclude directories from uv operations
+.git/
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.vscode/
+.idea/
