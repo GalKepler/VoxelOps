@@ -30,9 +30,7 @@ def validate_input_dir(input_dir: Path, dir_type: str = "Input") -> None:
 
 
 def validate_participant(
-    input_dir: Path,
-    participant: str,
-    prefix: str = "sub-"
+    input_dir: Path, participant: str, prefix: str = "sub-"
 ) -> None:
     """Validate that a participant exists in the input directory.
 
@@ -104,10 +102,7 @@ def run_docker(
 
     try:
         result = subprocess.run(
-            cmd,
-            capture_output=capture_output,
-            text=True,
-            check=False
+            cmd, capture_output=capture_output, text=True, check=False
         )
 
         end_time = datetime.now()
@@ -133,7 +128,7 @@ def run_docker(
         # Save to JSON log
         if log_file:
             record["log_file"] = str(log_file)
-            with open(log_file, 'w') as f:
+            with open(log_file, "w") as f:
                 json.dump(record, f, indent=2)
             print(f"Execution log saved: {log_file}")
 
@@ -147,7 +142,7 @@ def run_docker(
 
             # Update log file with error
             if log_file:
-                with open(log_file, 'w') as f:
+                with open(log_file, "w") as f:
                     json.dump(record, f, indent=2)
 
             raise ProcedureExecutionError(
@@ -165,13 +160,11 @@ def run_docker(
     except subprocess.TimeoutExpired as e:
         raise ProcedureExecutionError(
             procedure_name=tool_name,
-            message=f"Process timed out after {e.timeout} seconds"
+            message=f"Process timed out after {e.timeout} seconds",
         )
     except Exception as e:
         if not isinstance(e, ProcedureExecutionError):
             raise ProcedureExecutionError(
-                procedure_name=tool_name,
-                message=str(e),
-                original_error=e
+                procedure_name=tool_name, message=str(e), original_error=e
             )
         raise

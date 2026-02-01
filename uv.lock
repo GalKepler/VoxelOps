@@ -6090,6 +6090,13 @@ wheels = [
 name = "voxelops"
 version = "2.0.0"
 source = { editable = "." }
+dependencies = [
+    { name = "ipython", version = "8.12.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
+    { name = "ipython", version = "8.18.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
+    { name = "ipython", version = "8.38.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.10.*'" },
+    { name = "ipython", version = "9.9.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "pyyaml" },
+]
 
 [package.optional-dependencies]
 config = [
@@ -6134,11 +6141,13 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'", specifier = ">=23.0" },
+    { name = "ipython", specifier = ">=8.12.3" },
     { name = "jupyter", marker = "extra == 'notebooks'", specifier = ">=1.0" },
     { name = "matplotlib", marker = "extra == 'notebooks'", specifier = ">=3.5" },
     { name = "pandas", marker = "extra == 'notebooks'", specifier = ">=1.3" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },
+    { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "pyyaml", marker = "extra == 'config'", specifier = ">=6.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
     { name = "seaborn", marker = "extra == 'notebooks'", specifier = ">=0.11" },

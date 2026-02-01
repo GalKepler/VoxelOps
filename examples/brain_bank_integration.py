@@ -17,10 +17,10 @@ from voxelops import (
     QSIReconInputs,
 )
 
-
 # ============================================================================
 # Simulated Brain Bank Database
 # ============================================================================
+
 
 class BrainBankDB:
     """Simulated brain bank database.
@@ -94,11 +94,13 @@ class BrainBankDB:
         # })
 
         # For demo: just append to list
-        self.processing_records.append({
-            'participant': participant,
-            'timestamp': datetime.now(),
-            'record': record,
-        })
+        self.processing_records.append(
+            {
+                "participant": participant,
+                "timestamp": datetime.now(),
+                "record": record,
+            }
+        )
 
         print(f"  → Saved {record['tool']} record for {participant} to database")
 
@@ -112,24 +114,23 @@ class BrainBankDB:
             Dict with pipeline status
         """
         records = [
-            r for r in self.processing_records
-            if r['participant'] == participant
+            r for r in self.processing_records if r["participant"] == participant
         ]
 
         status = {
-            'participant': participant,
-            'completed_steps': [],
-            'failed_steps': [],
-            'total_duration': 0,
+            "participant": participant,
+            "completed_steps": [],
+            "failed_steps": [],
+            "total_duration": 0,
         }
 
         for rec in records:
-            tool = rec['record']['tool']
-            if rec['record']['success']:
-                status['completed_steps'].append(tool)
-                status['total_duration'] += rec['record']['duration_seconds']
+            tool = rec["record"]["tool"]
+            if rec["record"]["success"]:
+                status["completed_steps"].append(tool)
+                status["total_duration"] += rec["record"]["duration_seconds"]
             else:
-                status['failed_steps'].append(tool)
+                status["failed_steps"].append(tool)
 
         return status
 
@@ -147,10 +148,9 @@ class BrainBankDB:
         Perfect reproducibility!
         """
         for rec in self.processing_records:
-            if (rec['participant'] == participant and
-                rec['record']['tool'] == tool):
-                cmd = rec['record']['command']
-                return ' '.join(cmd)
+            if rec["participant"] == participant and rec["record"]["tool"] == tool:
+                cmd = rec["record"]["command"]
+                return " ".join(cmd)
 
         return None
 
@@ -158,6 +158,7 @@ class BrainBankDB:
 # ============================================================================
 # Brain Bank Processing Functions
 # ============================================================================
+
 
 def process_new_participants(db: BrainBankDB, bids_root: Path):
     """Process all participants that need QSIPrep.
@@ -179,11 +180,11 @@ def process_new_participants(db: BrainBankDB, bids_root: Path):
     # Define brain bank standard parameters
     # These are used for ALL participants - perfect consistency!
     BRAIN_BANK_QSIPREP = {
-        'nprocs': 16,
-        'mem_gb': 32,
-        'output_resolution': 1.6,
-        'output_spaces': ['MNI152NLin2009cAsym'],
-        'longitudinal': True,
+        "nprocs": 16,
+        "mem_gb": 32,
+        "output_resolution": 1.6,
+        "output_spaces": ["MNI152NLin2009cAsym"],
+        "longitudinal": True,
     }
 
     for participant in participants:
@@ -207,11 +208,11 @@ def process_new_participants(db: BrainBankDB, bids_root: Path):
         except Exception as e:
             # Save failure to database too
             error_record = {
-                'tool': 'qsiprep',
-                'participant': participant,
-                'success': False,
-                'error': str(e),
-                'timestamp': datetime.now().isoformat(),
+                "tool": "qsiprep",
+                "participant": participant,
+                "success": False,
+                "error": str(e),
+                "timestamp": datetime.now().isoformat(),
             }
             db.save_processing_record(participant, error_record)
 
@@ -237,7 +238,7 @@ def generate_audit_report(db: BrainBankDB) -> str:
     report.append("\n## Summary")
 
     # Get all participants
-    participants = set(r['participant'] for r in db.processing_records)
+    participants = set(r["participant"] for r in db.processing_records)
     report.append(f"\nTotal participants processed: {len(participants)}")
 
     # Per-participant status
@@ -249,10 +250,10 @@ def generate_audit_report(db: BrainBankDB) -> str:
         report.append(f"\n### Participant: {participant}")
         report.append(f"\n- Completed steps: {', '.join(status['completed_steps'])}")
 
-        if status['failed_steps']:
+        if status["failed_steps"]:
             report.append(f"- Failed steps: {', '.join(status['failed_steps'])}")
 
-        duration_hours = status['total_duration'] / 3600
+        duration_hours = status["total_duration"] / 3600
         report.append(f"- Total processing time: {duration_hours:.2f} hours")
 
         # Reproducibility section
@@ -261,16 +262,16 @@ def generate_audit_report(db: BrainBankDB) -> str:
         report.append("```bash")
 
         for rec in db.processing_records:
-            if rec['participant'] == participant and rec['record']['success']:
-                tool = rec['record']['tool']
-                cmd = ' '.join(rec['record']['command'])
+            if rec["participant"] == participant and rec["record"]["success"]:
+                tool = rec["record"]["tool"]
+                cmd = " ".join(rec["record"]["command"])
                 report.append(f"# {tool}")
                 report.append(cmd)
                 report.append("")
 
         report.append("```")
 
-    return '\n'.join(report)
+    return "\n".join(report)
 
 
 def check_pipeline_completion(db: BrainBankDB) -> Dict[str, List[str]]:
@@ -283,15 +284,15 @@ def check_pipeline_completion(db: BrainBankDB) -> Dict[str, List[str]]:
         Dict mapping pipeline step -> list of completed participants
     """
     completion = {
-        'qsiprep': [],
-        'qsirecon': [],
-        'qsiparc': [],
+        "qsiprep": [],
+        "qsirecon": [],
+        "qsiparc": [],
     }
 
     for rec in db.processing_records:
-        if rec['record']['success']:
-            participant = rec['participant']
-            tool = rec['record']['tool']
+        if rec["record"]["success"]:
+            participant = rec["participant"]
+            tool = rec["record"]["tool"]
             if tool in completion and participant not in completion[tool]:
                 completion[tool].append(participant)
 
@@ -301,6 +302,7 @@ def check_pipeline_completion(db: BrainBankDB) -> Dict[str, List[str]]:
 # ============================================================================
 # Example Usage
 # ============================================================================
+
 
 def main():
     """Example brain bank integration workflow."""
@@ -322,32 +324,32 @@ def main():
     # Simulate some records for demo
     db.processing_records = [
         {
-            'participant': '01',
-            'timestamp': datetime.now(),
-            'record': {
-                'tool': 'qsiprep',
-                'participant': '01',
-                'command': ['docker', 'run', '...'],
-                'duration_seconds': 3600,
-                'duration_human': '1:00:00',
-                'success': True,
-                'start_time': '2026-01-26T10:00:00',
-                'end_time': '2026-01-26T11:00:00',
-            }
+            "participant": "01",
+            "timestamp": datetime.now(),
+            "record": {
+                "tool": "qsiprep",
+                "participant": "01",
+                "command": ["docker", "run", "..."],
+                "duration_seconds": 3600,
+                "duration_human": "1:00:00",
+                "success": True,
+                "start_time": "2026-01-26T10:00:00",
+                "end_time": "2026-01-26T11:00:00",
+            },
         },
         {
-            'participant': '01',
-            'timestamp': datetime.now(),
-            'record': {
-                'tool': 'qsirecon',
-                'participant': '01',
-                'command': ['docker', 'run', '...'],
-                'duration_seconds': 1800,
-                'duration_human': '0:30:00',
-                'success': True,
-                'start_time': '2026-01-26T11:00:00',
-                'end_time': '2026-01-26T11:30:00',
-            }
+            "participant": "01",
+            "timestamp": datetime.now(),
+            "record": {
+                "tool": "qsirecon",
+                "participant": "01",
+                "command": ["docker", "run", "..."],
+                "duration_seconds": 1800,
+                "duration_human": "0:30:00",
+                "success": True,
+                "start_time": "2026-01-26T11:00:00",
+                "end_time": "2026-01-26T11:30:00",
+            },
         },
     ]
 
@@ -364,7 +366,7 @@ def main():
 
     # Example 4: Reproduce processing
     print("\n4. Reproducing processing for participant 01...")
-    cmd = db.reproduce_processing('01', 'qsiprep')
+    cmd = db.reproduce_processing("01", "qsiprep")
     if cmd:
         print(f"  Command: {cmd}")
         print("  → Just run this command to reproduce exactly!")
@@ -372,7 +374,8 @@ def main():
     print("\n" + "=" * 80)
     print("KEY BENEFITS FOR BRAIN BANKS")
     print("=" * 80)
-    print("""
+    print(
+        """
 1. REPRODUCIBILITY
    - Exact command stored in database
    - Just run it again for perfect reproduction
@@ -393,7 +396,8 @@ def main():
    - No complex objects to serialize
    - No special database schema required
    - Just store the dict!
-    """)
+    """
+    )
 
 
 if __name__ == "__main__":

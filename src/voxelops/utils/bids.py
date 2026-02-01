@@ -18,7 +18,7 @@ def post_process_heudiconv_output(
     Orchestrates all post-processing steps:
     1. Verify fieldmap EPI files exist
     2. Add IntendedFor fields to fmap JSONs
-    3. Remove bval/bvec from fmap directories
+    3. Hide bval/bvec from fmap directories (rename with dot prefix)
 
     Args:
         bids_dir: Root BIDS directory
@@ -37,11 +37,11 @@ def post_process_heudiconv_output(
         }
     """
     results = {
-        'success': True,
-        'errors': [],
-        'verification': {},
-        'intended_for': {},
-        'cleanup': {},
+        "success": True,
+        "errors": [],
+        "verification": {},
+        "intended_for": {},
+        "cleanup": {},
     }
 
     # Build participant directory path
@@ -50,45 +50,47 @@ def post_process_heudiconv_output(
         participant_dir = participant_dir / f"ses-{session}"
 
     if not participant_dir.exists():
-        results['success'] = False
-        results['errors'].append(f"Participant directory not found: {participant_dir}")
+        results["success"] = False
+        results["errors"].append(f"Participant directory not found: {participant_dir}")
         return results
 
     # Step 1: Verify fieldmap EPI files exist
     try:
         verification_result = verify_fmap_epi_files(participant_dir, session)
-        results['verification'] = verification_result
+        results["verification"] = verification_result
 
-        if not verification_result['success']:
-            results['errors'].extend(verification_result.get('errors', []))
+        if not verification_result["success"]:
+            results["errors"].extend(verification_result.get("errors", []))
 
     except Exception as e:
-        results['errors'].append(f"Verification failed: {e}")
-        results['success'] = False
+        results["errors"].append(f"Verification failed: {e}")
+        results["success"] = False
 
     # Step 2: Add IntendedFor to fieldmap JSONs
     try:
-        intended_for_result = add_intended_for_to_fmaps(participant_dir, session, dry_run)
-        results['intended_for'] = intended_for_result
+        intended_for_result = add_intended_for_to_fmaps(
+            participant_dir, session, dry_run
+        )
+        results["intended_for"] = intended_for_result
 
-        if not intended_for_result['success']:
-            results['errors'].extend(intended_for_result.get('errors', []))
+        if not intended_for_result["success"]:
+            results["errors"].extend(intended_for_result.get("errors", []))
 
     except Exception as e:
-        results['errors'].append(f"IntendedFor processing failed: {e}")
-        results['success'] = False
+        results["errors"].append(f"IntendedFor processing failed: {e}")
+        results["success"] = False
 
-    # Step 3: Remove bval/bvec from fmap directories
+    # Step 3: Hide bval/bvec from fmap directories
     try:
         cleanup_result = remove_bval_bvec_from_fmaps(participant_dir, session, dry_run)
-        results['cleanup'] = cleanup_result
+        results["cleanup"] = cleanup_result
 
-        if not cleanup_result['success']:
-            results['errors'].extend(cleanup_result.get('errors', []))
+        if not cleanup_result["success"]:
+            results["errors"].extend(cleanup_result.get("errors", []))
 
     except Exception as e:
-        results['errors'].append(f"Cleanup failed: {e}")
-        results['success'] = False
+        results["errors"].append(f"Cleanup failed: {e}")
+        results["success"] = False
 
     return results
 
@@ -110,17 +112,17 @@ def verify_fmap_epi_files(
         Dictionary with verification results
     """
     results = {
-        'success': True,
-        'found_files': [],
-        'missing_files': [],
-        'errors': [],
+        "success": True,
+        "found_files": [],
+        "missing_files": [],
+        "errors": [],
     }
 
     fmap_dir = participant_dir / "fmap"
 
     if not fmap_dir.exists():
-        results['success'] = False
-        results['errors'].append(f"Fieldmap directory not found: {fmap_dir}")
+        results["success"] = False
+        results["errors"].append(f"Fieldmap directory not found: {fmap_dir}")
         return results
 
     # Look for DWI fieldmap files
@@ -128,18 +130,18 @@ def verify_fmap_epi_files(
     dwi_epi_json = list(fmap_dir.glob("*acq-dwi*_epi.json"))
 
     if dwi_epi_nii:
-        results['found_files'].extend([str(f.name) for f in dwi_epi_nii])
+        results["found_files"].extend([str(f.name) for f in dwi_epi_nii])
     else:
-        results['missing_files'].append("*acq-dwi*_epi.nii.gz")
-        results['errors'].append("No DWI fieldmap NIfTI files found")
-        results['success'] = False
+        results["missing_files"].append("*acq-dwi*_epi.nii.gz")
+        results["errors"].append("No DWI fieldmap NIfTI files found")
+        results["success"] = False
 
     if dwi_epi_json:
-        results['found_files'].extend([str(f.name) for f in dwi_epi_json])
+        results["found_files"].extend([str(f.name) for f in dwi_epi_json])
     else:
-        results['missing_files'].append("*acq-dwi*_epi.json")
-        results['errors'].append("No DWI fieldmap JSON files found")
-        results['success'] = False
+        results["missing_files"].append("*acq-dwi*_epi.json")
+        results["errors"].append("No DWI fieldmap JSON files found")
+        results["success"] = False
 
     return results
 
@@ -165,25 +167,25 @@ def add_intended_for_to_fmaps(
         Dictionary with processing results
     """
     results = {
-        'success': True,
-        'updated_files': [],
-        'errors': [],
-        'dry_run': dry_run,
+        "success": True,
+        "updated_files": [],
+        "errors": [],
+        "dry_run": dry_run,
     }
 
     fmap_dir = participant_dir / "fmap"
 
     if not fmap_dir.exists():
-        results['success'] = False
-        results['errors'].append(f"Fieldmap directory not found: {fmap_dir}")
+        results["success"] = False
+        results["errors"].append(f"Fieldmap directory not found: {fmap_dir}")
         return results
 
     # Find all fieldmap JSON files
     fmap_jsons = list(fmap_dir.glob("*_epi.json"))
 
     if not fmap_jsons:
-        results['errors'].append("No fieldmap JSON files found")
-        results['success'] = False
+        results["errors"].append("No fieldmap JSON files found")
+        results["success"] = False
         return results
 
     for fmap_json in fmap_jsons:
@@ -200,11 +202,11 @@ def add_intended_for_to_fmaps(
                 target_files = _find_func_targets(participant_dir)
                 acq_type = "functional"
             else:
-                results['errors'].append(f"Unknown acquisition type in {filename}")
+                results["errors"].append(f"Unknown acquisition type in {filename}")
                 continue
 
             if not target_files:
-                results['errors'].append(f"No target files found for {filename}")
+                results["errors"].append(f"No target files found for {filename}")
                 continue
 
             # Build IntendedFor paths (relative to session or participant directory)
@@ -217,24 +219,28 @@ def add_intended_for_to_fmaps(
             if not dry_run:
                 success = _update_json_sidecar(fmap_json, intended_for_paths)
                 if success:
-                    results['updated_files'].append({
-                        'file': str(fmap_json.name),
-                        'type': acq_type,
-                        'targets': intended_for_paths,
-                    })
+                    results["updated_files"].append(
+                        {
+                            "file": str(fmap_json.name),
+                            "type": acq_type,
+                            "targets": intended_for_paths,
+                        }
+                    )
                 else:
-                    results['errors'].append(f"Failed to update {filename}")
+                    results["errors"].append(f"Failed to update {filename}")
             else:
-                results['updated_files'].append({
-                    'file': str(fmap_json.name),
-                    'type': acq_type,
-                    'targets': intended_for_paths,
-                    'note': 'Dry run - not modified',
-                })
+                results["updated_files"].append(
+                    {
+                        "file": str(fmap_json.name),
+                        "type": acq_type,
+                        "targets": intended_for_paths,
+                        "note": "Dry run - not modified",
+                    }
+                )
 
         except Exception as e:
-            results['errors'].append(f"Error processing {fmap_json.name}: {e}")
-            results['success'] = False
+            results["errors"].append(f"Error processing {fmap_json.name}: {e}")
+            results["success"] = False
 
     return results
 
@@ -245,61 +251,73 @@ def remove_bval_bvec_from_fmaps(
     dry_run: bool = False,
 ) -> Dict[str, Any]:
     """
-    Remove .bvec and .bval files from fmap directories.
+    Hide .bvec and .bval files from fmap directories by renaming with dot prefix.
 
     These files are incorrectly generated by dcm2niix for fieldmaps
-    and are not BIDS-compliant for EPI fieldmaps.
+    and are not BIDS-compliant for EPI fieldmaps. Instead of deleting,
+    we rename them with a leading dot to hide them (e.g., .filename.bvec).
 
     Args:
         participant_dir: Path to participant directory (or session directory if session exists)
         session: Session ID (for logging purposes)
-        dry_run: If True, report files to remove without deleting
+        dry_run: If True, report files to hide without renaming
 
     Returns:
         Dictionary with cleanup results
     """
     results = {
-        'success': True,
-        'removed_files': [],
-        'errors': [],
-        'dry_run': dry_run,
+        "success": True,
+        "hidden_files": [],
+        "errors": [],
+        "dry_run": dry_run,
     }
 
     fmap_dir = participant_dir / "fmap"
 
     if not fmap_dir.exists():
-        results['errors'].append(f"Fieldmap directory not found: {fmap_dir}")
-        results['success'] = False
+        results["errors"].append(f"Fieldmap directory not found: {fmap_dir}")
+        results["success"] = False
         return results
 
-    # Find all .bvec and .bval files in fmap directory
-    bvec_files = list(fmap_dir.glob("*_epi.bvec"))
-    bval_files = list(fmap_dir.glob("*_epi.bval"))
+    # Find all .bvec and .bval files in fmap directory (excluding already hidden ones)
+    bvec_files = [f for f in fmap_dir.glob("*_epi.bvec") if not f.name.startswith(".")]
+    bval_files = [f for f in fmap_dir.glob("*_epi.bval") if not f.name.startswith(".")]
 
-    files_to_remove = bvec_files + bval_files
+    files_to_hide = bvec_files + bval_files
 
-    if not files_to_remove:
-        # Not an error - just means files are already clean
+    if not files_to_hide:
+        # Not an error - just means files are already clean/hidden
         return results
 
-    for file_path in files_to_remove:
+    for file_path in files_to_hide:
         try:
             if not dry_run:
-                file_path.unlink()
-                results['removed_files'].append(str(file_path.name))
+                # Rename with leading dot to hide
+                hidden_path = file_path.parent / f".{file_path.name}"
+                file_path.rename(hidden_path)
+                results["hidden_files"].append(
+                    {
+                        "original": str(file_path.name),
+                        "hidden_as": str(hidden_path.name),
+                    }
+                )
             else:
-                results['removed_files'].append({
-                    'file': str(file_path.name),
-                    'note': 'Dry run - not deleted',
-                })
+                results["hidden_files"].append(
+                    {
+                        "file": str(file_path.name),
+                        "will_hide_as": f".{file_path.name}",
+                        "note": "Dry run - not renamed",
+                    }
+                )
         except Exception as e:
-            results['errors'].append(f"Failed to remove {file_path.name}: {e}")
-            results['success'] = False
+            results["errors"].append(f"Failed to hide {file_path.name}: {e}")
+            results["success"] = False
 
     return results
 
 
 # Private helper functions
+
 
 def _find_dwi_targets(participant_dir: Path) -> List[Path]:
     """Find all DWI NIfTI files in dwi directory."""
@@ -339,6 +357,8 @@ def _build_intended_for_path(
     # Get path relative to participant_dir
     try:
         rel_path = target_file.relative_to(participant_dir)
+        if session:  # Add "ses-{session}" before
+            rel_path = f"ses-{session}/{rel_path}"
         return str(rel_path)
     except ValueError:
         # If relative_to fails, build manually
@@ -367,7 +387,7 @@ def _update_json_sidecar(json_path: Path, intended_for: List[str]) -> bool:
             return False
 
         # Add IntendedFor field (BIDS spec requires array)
-        data['IntendedFor'] = intended_for
+        data["IntendedFor"] = intended_for
 
         # Make file writable if it's read-only (HeudiConv creates read-only files)
         current_mode = json_path.stat().st_mode
@@ -376,7 +396,7 @@ def _update_json_sidecar(json_path: Path, intended_for: List[str]) -> bool:
             json_path.chmod(current_mode | stat.S_IWUSR)
 
         # Write back with formatting
-        with open(json_path, 'w') as f:
+        with open(json_path, "w") as f:
             json.dump(data, f, indent=2)
 
         return True
@@ -397,7 +417,7 @@ def _read_json_sidecar(json_path: Path) -> Optional[Dict[str, Any]]:
         Dictionary with JSON contents, or None if reading fails
     """
     try:
-        with open(json_path, 'r') as f:
+        with open(json_path, "r") as f:
             return json.load(f)
     except Exception as e:
         print(f"Error reading {json_path}: {e}")

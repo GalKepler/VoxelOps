@@ -1,5 +1,6 @@
 """QSIRecon diffusion reconstruction runner."""
 
+import os
 from pathlib import Path
 from typing import Dict, Optional, Any
 
@@ -16,9 +17,7 @@ from voxelops.schemas.qsirecon import (
 
 
 def run_qsirecon(
-    inputs: QSIReconInputs,
-    config: Optional[QSIReconDefaults] = None,
-    **overrides
+    inputs: QSIReconInputs, config: Optional[QSIReconDefaults] = None, **overrides
 ) -> Dict[str, Any]:
     """Run QSIRecon diffusion reconstruction and connectivity.
 
@@ -74,12 +73,26 @@ def run_qsirecon(
     # Generate expected outputs
     expected_outputs = QSIReconOutputs.from_inputs(inputs, output_dir, work_dir)
 
+    # Get current user/group IDs for Docker
+    uid = os.getuid()
+    gid = os.getgid()
+
     # Build Docker command
     cmd = [
-        "docker", "run", "--rm",
-        "-v", f"{inputs.qsiprep_dir}:/data:ro",
-        "-v", f"{output_dir}:/out",
-        "-v", f"{work_dir}:/work",
+        "docker",
+        "run",
+        "-it",
+        "--rm",
+        "--user",
+        f"{uid}:{gid}",
+        "-v",
+        f"{inputs.qsiprep_dir}:/data:ro",
+        "-v",
+        f"{output_dir}:/out",
+        "-v",
+        f"{work_dir}:/work",
+        "-v",
+        f"{inputs.recon_spec}:/recon_spec.yaml:ro",
     ]
 
     # Add optional mounts
@@ -87,36 +100,41 @@ def run_qsirecon(
         cmd.extend(["-v", f"{config.fs_license}:/license.txt:ro"])
 
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
-        cmd.extend(["-v", f"{config.fs_subjects_dir}:/subjects"])
-
-    if config.recon_spec and config.recon_spec.exists():
-        cmd.extend(["-v", f"{config.recon_spec}:/recon_spec.yaml:ro"])
+        cmd.extend(["-v", f"{config.fs_subjects_dir}:/subjects:ro"])
 
     # Container image
     cmd.append(config.docker_image)
 
     # QSIRecon arguments
-    cmd.extend([
-        "/data", "/out", "participant",
-        f"--participant-label={inputs.participant}",
-        f"--nprocs={config.nprocs}",
-        f"--mem-gb={config.mem_gb}",
-        "--work-dir=/work",
-    ])
+    cmd.extend(
+        [
+            "/data",
+            "/out",
+            "participant",
+            "--participant-label",
+            inputs.participant,
+            "--nprocs",
+            str(config.nprocs),
+            "--mem-mb",
+            str(config.mem_mb),
+            "--work-dir",
+            "/work",
+        ]
+    )
 
     # Atlases
-    for atlas in config.atlases:
-        cmd.append(f"--atlas={atlas}")
+    if config.atlases:
+        cmd.extend(["--atlases", *config.atlases])
 
     # Optional arguments
-    if config.recon_spec and config.recon_spec.exists():
-        cmd.append("--recon-spec=/recon_spec.yaml")
+    if inputs.recon_spec and inputs.recon_spec.exists():
+        cmd.extend(["--recon-spec", "/recon_spec.yaml"])
 
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
-        cmd.append("--freesurfer-input=/subjects")
+        cmd.extend(["--freesurfer-input", "/subjects"])
 
     if config.fs_license and config.fs_license.exists():
-        cmd.append("--fs-license-file=/license.txt")
+        cmd.extend(["--fs-license-file", "/license.txt"])
 
     # Execute
     log_dir = output_dir.parent / "logs"
@@ -128,8 +146,8 @@ def run_qsirecon(
     )
 
     # Add inputs, config, and expected outputs to result
-    result['inputs'] = inputs
-    result['config'] = config
-    result['expected_outputs'] = expected_outputs
+    result["inputs"] = inputs
+    result["config"] = config
+    result["expected_outputs"] = expected_outputs
 
     return result

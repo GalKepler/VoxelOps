@@ -52,3 +52,5 @@ logs/
 .ruff_cache/
 
 heuristic.py
+bids_filters.json
+qsirecon_spec.yaml

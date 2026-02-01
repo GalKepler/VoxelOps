@@ -14,11 +14,14 @@ class QSIPrepInputs:
         participant: Participant label (without 'sub-' prefix)
         output_dir: Output directory (optional, defaults to bids_dir/../derivatives/qsiprep)
         work_dir: Working directory (optional, defaults to output_dir/../work/qsiprep)
+        bids_filters: Path to BIDS filters JSON file (optional)
     """
+
     bids_dir: Path
     participant: str
     output_dir: Optional[Path] = None
     work_dir: Optional[Path] = None
+    bids_filters: Optional[Path] = None  # Path to BIDS filters JSON file
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -27,6 +30,8 @@ class QSIPrepInputs:
             self.output_dir = Path(self.output_dir)
         if self.work_dir:
             self.work_dir = Path(self.work_dir)
+        if self.bids_filters:
+            self.bids_filters = Path(self.bids_filters)
 
 
 @dataclass
@@ -40,6 +45,7 @@ class QSIPrepOutputs:
         work_dir: Working directory
         figures_dir: QC figures directory
     """
+
     qsiprep_dir: Path
     participant_dir: Path
     html_report: Path
@@ -84,15 +90,18 @@ class QSIPrepDefaults:
         fs_license: Path to FreeSurfer license file
         docker_image: Docker image to use
     """
+
     nprocs: int = 8
     mem_mb: int = 16000
     output_resolution: float = 1.6
-    anatomical_template: List[str] = field(default_factory=lambda: ["MNI152NLin2009cAsym"])
+    anatomical_template: List[str] = field(
+        default_factory=lambda: ["MNI152NLin2009cAsym"]
+    )
     longitudinal: bool = False
     subject_anatomical_reference: str = "unbiased"
     skip_bids_validation: bool = False
     fs_license: Optional[Path] = None
-    docker_image: str = "pennlinc/qsiprep:1.0.2"
+    docker_image: str = "pennlinc/qsiprep:latest"
 
     def __post_init__(self):
         """Ensure fs_license is Path object if provided."""

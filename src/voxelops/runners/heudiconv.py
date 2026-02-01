@@ -15,9 +15,7 @@ from voxelops.utils.bids import post_process_heudiconv_output
 
 
 def run_heudiconv(
-    inputs: HeudiconvInputs,
-    config: Optional[HeudiconvDefaults] = None,
-    **overrides
+    inputs: HeudiconvInputs, config: Optional[HeudiconvDefaults] = None, **overrides
 ) -> Dict[str, Any]:
     """Convert DICOM to BIDS using HeudiConv.
 
@@ -90,17 +88,28 @@ def run_heudiconv(
     gid = os.getgid()
 
     cmd = [
-        "docker", "run", "--rm",
-        "--user", f"{uid}:{gid}",
-        "-v", f"{inputs.dicom_dir}:/dicom:ro",
-        "-v", f"{output_dir}:/output",
-        "-v", f"{config.heuristic}:/heuristic.py:ro",
+        "docker",
+        "run",
+        "--rm",
+        "--user",
+        f"{uid}:{gid}",
+        "-v",
+        f"{inputs.dicom_dir}:/dicom:ro",
+        "-v",
+        f"{output_dir}:/output",
+        "-v",
+        f"{config.heuristic}:/heuristic.py:ro",
         config.docker_image,
-        "--files", "/dicom",
-        "--outdir", "/output",
-        "--subjects", inputs.participant,
-        "--converter", config.converter,
-        "--heuristic", "/heuristic.py",
+        "--files",
+        "/dicom",
+        "--outdir",
+        "/output",
+        "--subjects",
+        inputs.participant,
+        "--converter",
+        config.converter,
+        "--heuristic",
+        "/heuristic.py",
     ]
 
     if inputs.session:
@@ -130,7 +139,7 @@ def run_heudiconv(
     )
 
     # Post-processing steps
-    if result['success'] and config.post_process:
+    if result["success"] and config.post_process:
         print(f"\n{'='*80}")
         print(f"Running post-HeudiConv processing for participant {inputs.participant}")
         print(f"{'='*80}\n")
@@ -142,26 +151,23 @@ def run_heudiconv(
                 session=inputs.session,
                 dry_run=config.post_process_dry_run,
             )
-            result['post_processing'] = post_result
+            result["post_processing"] = post_result
 
-            if not post_result['success']:
+            if not post_result["success"]:
                 print("\n⚠ Post-processing completed with warnings:")
-                for error in post_result.get('errors', []):
+                for error in post_result.get("errors", []):
                     print(f"  - {error}")
             else:
                 print("\n✓ Post-processing completed successfully")
 
         except Exception as e:
             print(f"\n⚠ Post-processing failed: {e}")
-            result['post_processing'] = {
-                'success': False,
-                'error': str(e)
-            }
+            result["post_processing"] = {"success": False, "error": str(e)}
             # Don't fail the entire conversion if post-processing fails
 
     # Add inputs, config, and expected outputs to result
-    result['inputs'] = inputs
-    result['config'] = config
-    result['expected_outputs'] = expected_outputs
+    result["inputs"] = inputs
+    result["config"] = config
+    result["expected_outputs"] = expected_outputs
 
     return result

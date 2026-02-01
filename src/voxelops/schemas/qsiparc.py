@@ -14,6 +14,7 @@ class QSIParcInputs:
         participant: Participant label (without 'sub-' prefix)
         output_dir: Output directory (optional, defaults to qsirecon_dir/../qsiparc)
     """
+
     qsirecon_dir: Path
     participant: str
     output_dir: Optional[Path] = None
@@ -34,6 +35,7 @@ class QSIParcOutputs:
         participant_dir: Participant-specific directory
         connectivity_dir: Connectivity matrices directory
     """
+
     qsiparc_dir: Path
     participant_dir: Path
     connectivity_dir: Path
@@ -67,5 +69,6 @@ class QSIParcDefaults:
         atlases: List of atlases for parcellation
         docker_image: Docker image to use
     """
+
     atlases: List[str] = field(default_factory=lambda: ["schaefer100", "schaefer200"])
     docker_image: str = "pennlinc/qsiparc:latest"

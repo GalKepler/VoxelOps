@@ -15,6 +15,7 @@ class HeudiconvInputs:
         output_dir: Output BIDS directory (optional, defaults to dicom_dir/../bids)
         session: Session label (optional, without 'ses-' prefix)
     """
+
     dicom_dir: Path
     participant: str
     output_dir: Optional[Path] = None
@@ -37,6 +38,7 @@ class HeudiconvOutputs:
         participant_dir: Participant-specific directory (sub-XX/)
         dataset_description: dataset_description.json file
     """
+
     bids_dir: Path
     participant_dir: Path
     dataset_description: Path
@@ -74,6 +76,7 @@ class HeudiconvDefaults:
         converter: DICOM converter to use
         docker_image: Docker image to use
     """
+
     heuristic: Optional[Path] = None
     bids_validator: bool = True
     overwrite: bool = False

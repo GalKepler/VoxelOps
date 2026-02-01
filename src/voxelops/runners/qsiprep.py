@@ -17,9 +17,7 @@ from voxelops.schemas.qsiprep import (
 
 
 def run_qsiprep(
-    inputs: QSIPrepInputs,
-    config: Optional[QSIPrepDefaults] = None,
-    **overrides
+    inputs: QSIPrepInputs, config: Optional[QSIPrepDefaults] = None, **overrides
 ) -> Dict[str, Any]:
     """Run QSIPrep diffusion MRI preprocessing.
 
@@ -82,47 +80,74 @@ def run_qsiprep(
     gid = os.getgid()
 
     cmd = [
-        "docker", "run", "--rm",
-        "--user", f"{uid}:{gid}",
-        "-v", f"{inputs.bids_dir}:/data:ro",
-        "-v", f"{output_dir}:/out",
-        "-v", f"{work_dir}:/work",
+        "docker",
+        "run",
+        "-ti",
+        "--rm",
+        "--user",
+        f"{uid}:{gid}",
+        "-v",
+        f"{inputs.bids_dir}:/data:ro",
+        "-v",
+        f"{output_dir}:/out",
+        "-v",
+        f"{work_dir}:/work",
     ]
 
     # Add FreeSurfer license if provided
     if config.fs_license and config.fs_license.exists():
         cmd.extend(["-v", f"{config.fs_license}:/license.txt:ro"])
+    # Add BIDS filters if provided
+    if inputs.bids_filters and inputs.bids_filters.exists():
+        cmd.extend(["-v", f"{inputs.bids_filters}:/bids_filters.json:ro"])
 
     # Container image
     cmd.append(config.docker_image)
 
     # QSIPrep arguments
-    cmd.extend([
-        "/data", "/out", "participant",
-        f"--participant-label {inputs.participant}",
-        f"--output-resolution {config.output_resolution}",
-        f"--nprocs {config.nprocs}",
-        f"--mem-mb {config.mem_mb}",
-        "--work-dir /work",
-    ])
+    cmd.extend(
+        [
+            "/data",
+            "/out",
+            "participant",
+            "--participant-label",
+            inputs.participant,
+            "--output-resolution",
+            str(config.output_resolution),
+            "--nprocs",
+            str(config.nprocs),
+            "--mem-mb",
+            str(config.mem_mb),
+            "--work-dir",
+            "/work",
+        ]
+    )
 
     # Output spaces
     for space in config.anatomical_template:
-        cmd.append(f"--anatomical-template {space}")
+        cmd.extend(["--anatomical-template", space])
 
     # Optional flags
     if config.longitudinal:
         cmd.append("--longitudinal")
-    
+
     # Optional subject anatomical reference
-    if hasattr(config, 'subject_anatomical_reference'):
-        cmd.append(f"--subject-anatomical-reference {config.subject_anatomical_reference}")
+    if (
+        hasattr(config, "subject_anatomical_reference")
+        and config.subject_anatomical_reference
+    ):
+        cmd.extend(
+            ["--subject-anatomical-reference", config.subject_anatomical_reference]
+        )
 
     if config.skip_bids_validation:
         cmd.append("--skip-bids-validation")
 
     if config.fs_license and config.fs_license.exists():
-        cmd.append("--fs-license-file /license.txt")
+        cmd.extend(["--fs-license-file", "/license.txt"])
+
+    if inputs.bids_filters and inputs.bids_filters.exists():
+        cmd.extend(["--bids-filter-file", "/bids_filters.json"])
 
     # Execute
     log_dir = output_dir.parent / "logs"
@@ -134,8 +159,8 @@ def run_qsiprep(
     )
 
     # Add inputs, config, and expected outputs to result
-    result['inputs'] = inputs
-    result['config'] = config
-    result['expected_outputs'] = expected_outputs
+    result["inputs"] = inputs
+    result["config"] = config
+    result["expected_outputs"] = expected_outputs
 
     return result

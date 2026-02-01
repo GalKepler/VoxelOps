@@ -76,17 +76,17 @@ def test_qsiprep_validation_missing_participant(mock_bids_dir):
         run_qsiprep(inputs)
 
 
-@patch('voxelops.runners.qsiprep.run_docker')
+@patch("voxelops.runners.qsiprep.run_docker")
 def test_qsiprep_command_building(mock_run_docker, qsiprep_inputs, tmp_path):
     """Test that QSIPrep builds correct Docker command."""
     # Mock run_docker to inspect command
     mock_run_docker.return_value = {
-        'tool': 'qsiprep',
-        'participant': '01',
-        'command': [],
-        'success': True,
-        'duration_seconds': 100,
-        'duration_human': '0:01:40',
+        "tool": "qsiprep",
+        "participant": "01",
+        "command": [],
+        "success": True,
+        "duration_seconds": 100,
+        "duration_human": "0:01:40",
     }
 
     # Run
@@ -97,7 +97,7 @@ def test_qsiprep_command_building(mock_run_docker, qsiprep_inputs, tmp_path):
 
     # Get the command that was built
     call_args = mock_run_docker.call_args
-    cmd = call_args.kwargs['cmd']
+    cmd = call_args.kwargs["cmd"]
 
     # Verify command structure
     assert cmd[0:2] == ["docker", "run"]
@@ -107,37 +107,37 @@ def test_qsiprep_command_building(mock_run_docker, qsiprep_inputs, tmp_path):
     assert any("--mem-gb=8" in arg for arg in cmd)
 
 
-@patch('voxelops.runners.qsiprep.run_docker')
+@patch("voxelops.runners.qsiprep.run_docker")
 def test_qsiprep_output_paths(mock_run_docker, qsiprep_inputs):
     """Test that expected outputs are generated correctly."""
     mock_run_docker.return_value = {
-        'tool': 'qsiprep',
-        'participant': '01',
-        'command': [],
-        'success': True,
-        'duration_seconds': 100,
-        'duration_human': '0:01:40',
+        "tool": "qsiprep",
+        "participant": "01",
+        "command": [],
+        "success": True,
+        "duration_seconds": 100,
+        "duration_human": "0:01:40",
     }
 
     result = run_qsiprep(qsiprep_inputs)
 
     # Check expected outputs are in result
-    assert 'expected_outputs' in result
-    outputs = result['expected_outputs']
+    assert "expected_outputs" in result
+    outputs = result["expected_outputs"]
 
     assert outputs.qsiprep_dir.name == "qsiprep"
     assert outputs.participant_dir.name == "sub-01"
     assert "sub-01" in str(outputs.html_report)
 
 
-@patch('voxelops.runners.qsiprep.run_docker')
+@patch("voxelops.runners.qsiprep.run_docker")
 def test_qsiprep_config_override(mock_run_docker, qsiprep_inputs):
     """Test that config parameters can be overridden."""
     mock_run_docker.return_value = {
-        'tool': 'qsiprep',
-        'participant': '01',
-        'command': [],
-        'success': True,
+        "tool": "qsiprep",
+        "participant": "01",
+        "command": [],
+        "success": True,
     }
 
     # Override defaults
@@ -149,7 +149,7 @@ def test_qsiprep_config_override(mock_run_docker, qsiprep_inputs):
     )
 
     # Get command
-    cmd = mock_run_docker.call_args.kwargs['cmd']
+    cmd = mock_run_docker.call_args.kwargs["cmd"]
 
     # Verify overrides were applied
     assert any("--nprocs=32" in arg for arg in cmd)
@@ -157,37 +157,37 @@ def test_qsiprep_config_override(mock_run_docker, qsiprep_inputs):
     assert any("--output-resolution=2.0" in arg for arg in cmd)
 
 
-@patch('voxelops.runners.qsiprep.run_docker')
+@patch("voxelops.runners.qsiprep.run_docker")
 def test_qsiprep_result_structure(mock_run_docker, qsiprep_inputs):
     """Test that result has expected structure."""
     mock_run_docker.return_value = {
-        'tool': 'qsiprep',
-        'participant': '01',
-        'command': ['docker', 'run'],
-        'exit_code': 0,
-        'start_time': '2026-01-26T10:00:00',
-        'end_time': '2026-01-26T11:00:00',
-        'duration_seconds': 3600,
-        'duration_human': '1:00:00',
-        'success': True,
-        'log_file': '/path/to/log.json',
+        "tool": "qsiprep",
+        "participant": "01",
+        "command": ["docker", "run"],
+        "exit_code": 0,
+        "start_time": "2026-01-26T10:00:00",
+        "end_time": "2026-01-26T11:00:00",
+        "duration_seconds": 3600,
+        "duration_human": "1:00:00",
+        "success": True,
+        "log_file": "/path/to/log.json",
     }
 
     result = run_qsiprep(qsiprep_inputs)
 
     # Check all expected keys
-    assert result['tool'] == 'qsiprep'
-    assert result['participant'] == '01'
-    assert 'command' in result
-    assert 'exit_code' in result
-    assert 'start_time' in result
-    assert 'end_time' in result
-    assert 'duration_seconds' in result
-    assert 'duration_human' in result
-    assert 'success' in result
-    assert 'inputs' in result
-    assert 'config' in result
-    assert 'expected_outputs' in result
+    assert result["tool"] == "qsiprep"
+    assert result["participant"] == "01"
+    assert "command" in result
+    assert "exit_code" in result
+    assert "start_time" in result
+    assert "end_time" in result
+    assert "duration_seconds" in result
+    assert "duration_human" in result
+    assert "success" in result
+    assert "inputs" in result
+    assert "config" in result
+    assert "expected_outputs" in result
 
 
 def test_input_path_conversion():

@@ -74,7 +74,7 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
         print(f"    Output: {heudiconv_inputs.output_dir or 'default'}")
     else:
         heudiconv_result = run_heudiconv(heudiconv_inputs, heudiconv_config)
-        pipeline_results['heudiconv'] = heudiconv_result
+        pipeline_results["heudiconv"] = heudiconv_result
 
         print(f"✓ HeudiConv completed in {heudiconv_result['duration_human']}")
         print(f"  BIDS dir: {heudiconv_result['expected_outputs'].bids_dir}")
@@ -88,7 +88,7 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
     print("\nSTEP 2: QSIPrep diffusion preprocessing...")
 
     if not dry_run:
-        bids_dir = heudiconv_result['expected_outputs'].bids_dir
+        bids_dir = heudiconv_result["expected_outputs"].bids_dir
     else:
         bids_dir = DERIVATIVES / "bids"
 
@@ -109,10 +109,12 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
     if dry_run:
         print(f"  Would run: qsiprep")
         print(f"    Input: {qsiprep_inputs.bids_dir}")
-        print(f"    Config: {qsiprep_config.nprocs} cores, {qsiprep_config.mem_gb}GB RAM")
+        print(
+            f"    Config: {qsiprep_config.nprocs} cores, {qsiprep_config.mem_gb}GB RAM"
+        )
     else:
         qsiprep_result = run_qsiprep(qsiprep_inputs, qsiprep_config)
-        pipeline_results['qsiprep'] = qsiprep_result
+        pipeline_results["qsiprep"] = qsiprep_result
 
         print(f"✓ QSIPrep completed in {qsiprep_result['duration_human']}")
         print(f"  Output dir: {qsiprep_result['expected_outputs'].qsiprep_dir}")
@@ -125,7 +127,7 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
     print("\nSTEP 3: QSIRecon diffusion reconstruction...")
 
     if not dry_run:
-        qsiprep_dir = qsiprep_result['expected_outputs'].qsiprep_dir
+        qsiprep_dir = qsiprep_result["expected_outputs"].qsiprep_dir
     else:
         qsiprep_dir = DERIVATIVES / "qsiprep"
 
@@ -143,7 +145,7 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
             qsirecon_inputs,
             atlases=["schaefer100", "schaefer200", "schaefer400"],
         )
-        pipeline_results['qsirecon'] = qsirecon_result
+        pipeline_results["qsirecon"] = qsirecon_result
 
         print(f"✓ QSIRecon completed in {qsirecon_result['duration_human']}")
         print(f"  Output dir: {qsirecon_result['expected_outputs'].qsirecon_dir}")
@@ -156,7 +158,7 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
     print("\nSTEP 4: QSIParc parcellation...")
 
     if not dry_run:
-        qsirecon_dir = qsirecon_result['expected_outputs'].qsirecon_dir
+        qsirecon_dir = qsirecon_result["expected_outputs"].qsirecon_dir
     else:
         qsirecon_dir = DERIVATIVES / "qsirecon"
 
@@ -170,7 +172,7 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
         print(f"    Input: {qsiparc_inputs.qsirecon_dir}")
     else:
         qsiparc_result = run_qsiparc(qsiparc_inputs)
-        pipeline_results['qsiparc'] = qsiparc_result
+        pipeline_results["qsiparc"] = qsiparc_result
 
         print(f"✓ QSIParc completed in {qsiparc_result['duration_human']}")
         print(f"  Connectivity: {qsiparc_result['expected_outputs'].connectivity_dir}")
@@ -185,9 +187,7 @@ def run_full_pipeline(participant: str, dry_run: bool = False):
     print("=" * 80)
 
     if not dry_run:
-        total_duration = sum(
-            r['duration_seconds'] for r in pipeline_results.values()
-        )
+        total_duration = sum(r["duration_seconds"] for r in pipeline_results.values())
         print(f"Total duration: {total_duration / 3600:.2f} hours")
 
         # Save complete pipeline record to database

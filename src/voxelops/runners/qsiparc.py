@@ -16,9 +16,7 @@ from voxelops.schemas.qsiparc import (
 
 
 def run_qsiparc(
-    inputs: QSIParcInputs,
-    config: Optional[QSIParcDefaults] = None,
-    **overrides
+    inputs: QSIParcInputs, config: Optional[QSIParcDefaults] = None, **overrides
 ) -> Dict[str, Any]:
     """Run parcellation on QSIRecon outputs using parcellate.
 
@@ -74,11 +72,16 @@ def run_qsiparc(
 
     # Build Docker command
     cmd = [
-        "docker", "run", "--rm",
-        "-v", f"{inputs.qsirecon_dir}:/input:ro",
-        "-v", f"{output_dir}:/output",
+        "docker",
+        "run",
+        "--rm",
+        "-v",
+        f"{inputs.qsirecon_dir}:/input:ro",
+        "-v",
+        f"{output_dir}:/output",
         config.docker_image,
-        "/input", "/output",
+        "/input",
+        "/output",
         f"--participant-label={inputs.participant}",
     ]
 
@@ -96,8 +99,8 @@ def run_qsiparc(
     )
 
     # Add inputs, config, and expected outputs to result
-    result['inputs'] = inputs
-    result['config'] = config
-    result['expected_outputs'] = expected_outputs
+    result["inputs"] = inputs
+    result["config"] = config
+    result["expected_outputs"] = expected_outputs
 
     return result
