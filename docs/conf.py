@@ -5,43 +5,44 @@
 
 import os
 import sys
-sys.path.insert(0, os.path.abspath('../src'))
+
+sys.path.insert(0, os.path.abspath("../src"))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'VoxelOps'
-copyright = '2026, YALab'
-author = 'YALab'
+project = "VoxelOps"
+copyright = "2026, Gal Kepler"
+author = "Gal Kepler"
 
-version = '2.0.0'
-release = '1.0.0'
+version = "1.0.0"
+release = "1.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'sphinx.ext.autodoc',
-    'sphinx.ext.napoleon',
-    'sphinx.ext.viewcode',
-    'sphinx_rtd_theme',
+    "sphinx.ext.autodoc",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.viewcode",
+    "sphinx_rtd_theme",
 ]
 
-templates_path = ['_templates']
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+templates_path = ["_templates"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # Mock imports for modules that might not be available during doc building
 autodoc_mock_imports = ["parcellate"]
 
 # Autodoc settings
 autodoc_default_options = {
-    'members': True,
-    'undoc-members': True,
-    'private-members': False,
-    'show-inheritance': True,
-    'ignore-module-all': True, # Ignore __all__ for autodoc purposes
+    "members": True,
+    "undoc-members": True,
+    "private-members": False,
+    "show-inheritance": True,
+    "ignore-module-all": True,  # Ignore __all__ for autodoc purposes
 }
-add_module_names = False # Don't prepend module names to object names
+add_module_names = False  # Don't prepend module names to object names
 
 # Napoleon settings
 napoleon_numpy_docstring = True
@@ -62,5 +63,5 @@ napoleon_attr_annotations = True
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'
-html_static_path = ['_static']
+html_theme = "sphinx_rtd_theme"
+html_static_path = ["_static"]
