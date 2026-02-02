@@ -9,11 +9,19 @@ from typing import Optional
 class HeudiconvInputs:
     """Required inputs for HeudiConv DICOM to BIDS conversion.
 
-    Attributes:
-        dicom_dir: Directory containing DICOM files
-        participant: Participant label (without 'sub-' prefix)
-        output_dir: Output BIDS directory (optional, defaults to dicom_dir/../bids)
-        session: Session label (optional, without 'ses-' prefix)
+    Parameters
+    ----------
+    dicom_dir : Path
+        Directory containing DICOM files.
+    participant : str
+        Participant label (without 'sub-' prefix).
+    output_dir : Optional[Path], optional
+        Output BIDS directory, by default None.
+        If None, defaults to dicom_dir/../bids.
+    session : Optional[str], optional
+        Session label (without 'ses-' prefix), by default None.
+    heuristic : Optional[Path], optional
+        Path to heuristic.py file, by default None.
     """
 
     dicom_dir: Path
@@ -33,10 +41,14 @@ class HeudiconvInputs:
 class HeudiconvOutputs:
     """Expected outputs from HeudiConv.
 
-    Attributes:
-        bids_dir: Root BIDS directory
-        participant_dir: Participant-specific directory (sub-XX/)
-        dataset_description: dataset_description.json file
+    Parameters
+    ----------
+    bids_dir : Path
+        Root BIDS directory.
+    participant_dir : Path
+        Participant-specific directory (sub-XX/).
+    dataset_description : Path
+        dataset_description.json file.
     """
 
     bids_dir: Path
@@ -47,12 +59,17 @@ class HeudiconvOutputs:
     def from_inputs(cls, inputs: HeudiconvInputs, output_dir: Path):
         """Generate expected output paths from inputs.
 
-        Args:
-            inputs: HeudiconvInputs instance
-            output_dir: Resolved output directory
+        Parameters
+        ----------
+        inputs : HeudiconvInputs
+            HeudiconvInputs instance.
+        output_dir : Path
+            Resolved output directory.
 
-        Returns:
-            HeudiconvOutputs with expected paths
+        Returns
+        -------
+        HeudiconvOutputs
+            HeudiconvOutputs with expected paths.
         """
         participant_dir = output_dir / f"sub-{inputs.participant}"
         if inputs.session:
@@ -69,12 +86,22 @@ class HeudiconvOutputs:
 class HeudiconvDefaults:
     """Default configuration for HeudiConv.
 
-    Attributes:
-        heuristic: Path to heuristic.py file (required for conversion)
-        bids_validator: Run BIDS validator after conversion
-        overwrite: Overwrite existing output
-        converter: DICOM converter to use
-        docker_image: Docker image to use
+    Parameters
+    ----------
+    heuristic : Optional[Path], optional
+        Path to heuristic.py file (required for conversion), by default None.
+    bids_validator : bool, optional
+        Run BIDS validator after conversion, by default True.
+    overwrite : bool, optional
+        Overwrite existing output, by default False.
+    converter : str, optional
+        DICOM converter to use, by default "dcm2niix".
+    docker_image : str, optional
+        Docker image to use, by default "nipy/heudiconv:1.3.4".
+    post_process : bool, optional
+        Enable post-heudiconv processing, by default True.
+    post_process_dry_run : bool, optional
+        Test mode - report only, don't modify, by default False.
     """
 
     heuristic: Optional[Path] = None

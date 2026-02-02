@@ -21,12 +21,18 @@ def run_qsiprep(
 ) -> Dict[str, Any]:
     """Run QSIPrep diffusion MRI preprocessing.
 
-    Args:
-        inputs: Required inputs (bids_dir, participant, etc.)
-        config: Configuration (uses brain bank defaults if not provided)
-        **overrides: Override any config parameter (e.g., nprocs=16)
+    Parameters
+    ----------
+    inputs : QSIPrepInputs
+        Required inputs (bids_dir, participant, etc.).
+    config : Optional[QSIPrepDefaults], optional
+        Configuration (uses brain bank defaults if not provided), by default None.
+    **overrides
+        Override any config parameter (e.g., nprocs=16).
 
-    Returns:
+    Returns
+    -------
+    Dict[str, Any]
         Execution record with:
             - tool: "qsiprep"
             - participant: Participant label
@@ -40,18 +46,22 @@ def run_qsiprep(
             - config: QSIPrepDefaults instance
             - expected_outputs: QSIPrepOutputs instance
 
-    Raises:
-        InputValidationError: If inputs are invalid
-        ProcedureExecutionError: If preprocessing fails
+    Raises
+    ------
+    InputValidationError
+        If inputs are invalid.
+    ProcedureExecutionError
+        If preprocessing fails.
 
-    Example:
-        >>> inputs = QSIPrepInputs(
-        ...     bids_dir=Path("/data/bids"),
-        ...     participant="01",
-        ... )
-        >>> result = run_qsiprep(inputs, nprocs=16)  # Override default nprocs
-        >>> print(f"Completed in {result['duration_human']}")
-        >>> print(f"Outputs in: {result['expected_outputs'].qsiprep_dir}")
+    Examples
+    --------
+    >>> inputs = QSIPrepInputs(
+    ...     bids_dir=Path("/data/bids"),
+    ...     participant="01",
+    ... )
+    >>> result = run_qsiprep(inputs, nprocs=16)  # Override default nprocs
+    >>> print(f"Completed in {result['duration_human']}")
+    >>> print(f"Outputs in: {result['expected_outputs'].qsiprep_dir}")
     """
     # Use brain bank defaults if config not provided
     config = config or QSIPrepDefaults()

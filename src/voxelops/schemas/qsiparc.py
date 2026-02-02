@@ -9,11 +9,23 @@ from parcellate.interfaces.models import AtlasDefinition
 class QSIParcInputs:
     """Required inputs for QSIParc parcellation.
 
-    Attributes:
-        qsirecon_dir: QSIRecon output directory
-        participant: Participant label (without 'sub-' prefix)
-        output_dir: Output directory (optional, defaults to qsirecon_dir parent)
-        session: Session label (optional, without 'ses-' prefix)
+    Parameters
+    ----------
+    qsirecon_dir : Path
+        QSIRecon output directory.
+    participant : str
+        Participant label (without 'sub-' prefix).
+    output_dir : Optional[Path], optional
+        Output directory, by default None.
+        If None, defaults to qsirecon_dir parent.
+    session : Optional[str], optional
+        Session label (without 'ses-' prefix), by default None.
+    atlases : Optional[list[AtlasDefinition]], optional
+        List of atlas definitions, by default None.
+    n_jobs : Optional[int], optional
+        Number of jobs to run in parallel, by default None.
+    n_procs : Optional[int], optional
+        Number of processors to use, by default None.
     """
 
     qsirecon_dir: Path
@@ -35,8 +47,10 @@ class QSIParcInputs:
 class QSIParcOutputs:
     """Expected outputs from QSIParc.
 
-    Attributes:
-        output_dir: Parcellation output directory
+    Parameters
+    ----------
+    output_dir : Path
+        Parcellation output directory.
     """
 
     output_dir: Path
@@ -45,12 +59,17 @@ class QSIParcOutputs:
     def from_inputs(cls, inputs: QSIParcInputs, output_dir: Path):
         """Generate expected output paths from inputs.
 
-        Args:
-            inputs: QSIParcInputs instance
-            output_dir: Resolved output directory
+        Parameters
+        ----------
+        inputs : QSIParcInputs
+            QSIParcInputs instance.
+        output_dir : Path
+            Resolved output directory.
 
-        Returns:
-            QSIParcOutputs with expected paths
+        Returns
+        -------
+        QSIParcOutputs
+            QSIParcOutputs with expected paths.
         """
         return cls(output_dir=output_dir)
 
@@ -59,12 +78,22 @@ class QSIParcOutputs:
 class QSIParcDefaults:
     """Default configuration for QSIParc (brain bank standards).
 
-    Attributes:
-        mask: Mask to apply during parcellation ("gm", "wm", "brain", or path)
-        force: Whether to overwrite existing outputs
-        background_label: Label value for background voxels
-        resampling_target: Resampling strategy ("data", "labels", "atlas", or None)
-        log_level: Logging verbosity (e.g., "INFO", "DEBUG")
+    Parameters
+    ----------
+    mask : Optional[str], optional
+        Mask to apply during parcellation ("gm", "wm", "brain", or path), by default "gm".
+    force : bool, optional
+        Whether to overwrite existing outputs, by default False.
+    background_label : int, optional
+        Label value for background voxels, by default 0.
+    resampling_target : Optional[str], optional
+        Resampling strategy ("data", "labels", "atlas", or None), by default "data".
+    log_level : str, optional
+        Logging verbosity (e.g., "INFO", "DEBUG"), by default "INFO".
+    n_jobs : Optional[int], optional
+        Number of jobs to run in parallel, by default 1.
+    n_procs : Optional[int], optional
+        Number of processors to use, by default 1.
     """
 
     mask: Optional[str] = "gm"

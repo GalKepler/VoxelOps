@@ -9,12 +9,20 @@ from typing import Optional, List
 class QSIPrepInputs:
     """Required inputs for QSIPrep diffusion preprocessing.
 
-    Attributes:
-        bids_dir: BIDS dataset directory
-        participant: Participant label (without 'sub-' prefix)
-        output_dir: Output directory (optional, defaults to bids_dir/../derivatives/qsiprep)
-        work_dir: Working directory (optional, defaults to output_dir/../work/qsiprep)
-        bids_filters: Path to BIDS filters JSON file (optional)
+    Parameters
+    ----------
+    bids_dir : Path
+        BIDS dataset directory.
+    participant : str
+        Participant label (without 'sub-' prefix).
+    output_dir : Optional[Path], optional
+        Output directory, by default None.
+        If None, defaults to bids_dir/../derivatives/qsiprep.
+    work_dir : Optional[Path], optional
+        Working directory, by default None.
+        If None, defaults to output_dir/../work/qsiprep.
+    bids_filters : Optional[Path], optional
+        Path to BIDS filters JSON file, by default None.
     """
 
     bids_dir: Path
@@ -38,12 +46,18 @@ class QSIPrepInputs:
 class QSIPrepOutputs:
     """Expected outputs from QSIPrep.
 
-    Attributes:
-        qsiprep_dir: QSIPrep output directory
-        participant_dir: Participant-specific directory
-        html_report: HTML report file
-        work_dir: Working directory
-        figures_dir: QC figures directory
+    Parameters
+    ----------
+    qsiprep_dir : Path
+        QSIPrep output directory.
+    participant_dir : Path
+        Participant-specific directory.
+    html_report : Path
+        HTML report file.
+    work_dir : Path
+        Working directory.
+    figures_dir : Path
+        QC figures directory.
     """
 
     qsiprep_dir: Path
@@ -56,13 +70,19 @@ class QSIPrepOutputs:
     def from_inputs(cls, inputs: QSIPrepInputs, output_dir: Path, work_dir: Path):
         """Generate expected output paths from inputs.
 
-        Args:
-            inputs: QSIPrepInputs instance
-            output_dir: Resolved output directory
-            work_dir: Resolved work directory
+        Parameters
+        ----------
+        inputs : QSIPrepInputs
+            QSIPrepInputs instance.
+        output_dir : Path
+            Resolved output directory.
+        work_dir : Path
+            Resolved work directory.
 
-        Returns:
-            QSIPrepOutputs with expected paths
+        Returns
+        -------
+        QSIPrepOutputs
+            QSIPrepOutputs with expected paths.
         """
         qsiprep_dir = output_dir / "qsiprep"
         participant_dir = qsiprep_dir / f"sub-{inputs.participant}"
@@ -80,15 +100,26 @@ class QSIPrepOutputs:
 class QSIPrepDefaults:
     """Default configuration for QSIPrep (brain bank standards).
 
-    Attributes:
-        nprocs: Number of parallel processes
-        mem_gb: Memory limit in GB
-        output_resolution: Output resolution in mm
-        output_spaces: List of output spaces
-        longitudinal: Enable longitudinal processing
-        skip_bids_validation: Skip BIDS validation
-        fs_license: Path to FreeSurfer license file
-        docker_image: Docker image to use
+    Parameters
+    ----------
+    nprocs : int, optional
+        Number of parallel processes, by default 8.
+    mem_gb : int, optional
+        Memory limit in GB, by default 16000.
+    output_resolution : float, optional
+        Output resolution in mm, by default 1.6.
+    anatomical_template : List[str], optional
+        List of output spaces, by default ["MNI152NLin2009cAsym"].
+    longitudinal : bool, optional
+        Enable longitudinal processing, by default False.
+    subject_anatomical_reference : str, optional
+        Anatomical reference for longitudinal processing, by default "unbiased".
+    skip_bids_validation : bool, optional
+        Skip BIDS validation, by default False.
+    fs_license : Optional[Path], optional
+        Path to FreeSurfer license file, by default None.
+    docker_image : str, optional
+        Docker image to use, by default "pennlinc/qsiprep:latest".
     """
 
     nprocs: int = 8

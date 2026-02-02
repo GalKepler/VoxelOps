@@ -27,12 +27,18 @@ def run_qsiparc(
     Atlases are auto-discovered from the QSIRecon derivatives directory
     (BIDS dseg files). No manual atlas list is needed.
 
-    Args:
-        inputs: Required inputs (qsirecon_dir, participant, etc.)
-        config: Configuration (uses brain bank defaults if not provided)
-        **overrides: Override any config parameter
+    Parameters
+    ----------
+    inputs : QSIParcInputs
+        Required inputs (qsirecon_dir, participant, etc.).
+    config : Optional[QSIParcDefaults], optional
+        Configuration (uses brain bank defaults if not provided), by default None.
+    **overrides
+        Override any config parameter.
 
-    Returns:
+    Returns
+    -------
+    Dict[str, Any]
         Execution record with:
             - tool: "qsiparc"
             - participant: Participant label
@@ -44,17 +50,21 @@ def run_qsiparc(
             - config: QSIParcDefaults instance
             - expected_outputs: QSIParcOutputs instance
 
-    Raises:
-        InputValidationError: If inputs are invalid
-        ProcedureExecutionError: If parcellation fails
+    Raises
+    ------
+    InputValidationError
+        If inputs are invalid.
+    ProcedureExecutionError
+        If parcellation fails.
 
-    Example:
-        >>> inputs = QSIParcInputs(
-        ...     qsirecon_dir=Path("/data/derivatives/qsirecon"),
-        ...     participant="01",
-        ... )
-        >>> result = run_qsiparc(inputs)
-        >>> print(result['output_files'])
+    Examples
+    --------
+    >>> inputs = QSIParcInputs(
+    ...     qsirecon_dir=Path("/data/derivatives/qsirecon"),
+    ...     participant="01",
+    ... )
+    >>> result = run_qsiparc(inputs)
+    >>> print(result['output_files'])
     """
 
     # Use brain bank defaults if config not provided
