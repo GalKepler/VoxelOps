@@ -65,3 +65,4 @@ napoleon_attr_annotations = True
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ["_static"]
+html_logo = "images/Gemini_Generated_Image_m9bi47m9bi47m9bi.png"
