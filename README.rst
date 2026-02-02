@@ -10,7 +10,7 @@ VoxelOps
    :alt: CI Status
 
 
-Clean, simple neuroimaging pipeline automation for brain banks.
+Clean, simple neuroimaging pipeline automation for the maintenance of the Strauss Neuroplasticity Brain Bank (SNBB).
 --------------------------------------------------------------
 
 VoxelOps is a Python package designed to streamline and automate neuroimaging data processing within brain bank environments. It provides straightforward interfaces for popular neuroimaging tools, encapsulating complex Docker commands into simple Python function calls. This ensures consistency, reproducibility, and ease of use for researchers and data managers alike.
