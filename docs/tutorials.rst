@@ -13,10 +13,9 @@ This section provides step-by-step guides for common neuroimaging data processin
 Current Examples
 ----------------
 
-For now, you can explore the runnable examples in the ``examples/`` directory of the VoxelOps repository:
+You can explore the runnable examples in the ``examples/`` directory of the VoxelOps repository:
 
-- `examples/brain_bank_integration.py`
-- `examples/full_pipeline.py`
+- `examples/dicom_to_bids.py`
 - `examples/qsiparc.py`
 - `examples/qsiprep.py`
 - `examples/qsirecon.py`

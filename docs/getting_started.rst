@@ -37,31 +37,33 @@ Prerequisites:
     from voxelops import run_qsiprep, QSIPrepInputs
 
     # 1. Define your input data and participant
-    #    Replace with the actual path to your BIDS dataset
+    #    Replace with the actual paths to your BIDS dataset and FreeSurfer license
     bids_root = Path("/path/to/your/bids_dataset")
     participant_id = "sub-01" # Or whatever your participant label is
+    fs_license_file = Path("/path/to/your/freesurfer/license.txt")
 
     inputs = QSIPrepInputs(
         bids_dir=bids_root,
         participant=participant_id,
         # Optional: Specify an output directory, otherwise it defaults
         # to a 'derivatives' folder next to your BIDS root.
-        # output_dir=Path("/path/to/my/derivatives")
+        # output_dir=Path("/path/to/my/derivatives"),
+        # Optional: Specify a working directory
+        # work_dir=Path("/path/to/my/workdir"),
+        # Optional: Specify a BIDS filter file
+        # bids_filters=Path("/path/to/my/bids_filters.json"),
     )
 
-    # 2. (Optional) Customize QSIPrep configuration
-    #    VoxelOps provides sensible defaults, but you can override them.
-    #    from voxelops import QSIPrepDefaults
-    #    config = QSIPrepDefaults(
-    #        nprocs=8,            # Number of CPU cores to use
-    #        mem_mb=30000,        # Memory limit in MB
-    #        # anatomical_template=["MNI152NLin2009cAsym", "T1w"], # Output spaces
-    #    )
-
-    # 3. Run the QSIPrep pipeline
-    #    Pass the inputs and optionally the config or specific overrides
+    # 2. Run the QSIPrep pipeline
+    #    You can pass configuration parameters directly as keyword arguments.
+    #    For a full list of configuration options, see the API Reference.
     print(f"Starting QSIPrep for participant {participant_id}...")
-    result = run_qsiprep(inputs #, config=config, anatomical_template=["MNI152NLin2009cAsym"]
+    result = run_qsiprep(
+        inputs,
+        fs_license=fs_license_file, # Path to your FreeSurfer license
+        nprocs=8,            # Number of CPU cores to use
+        mem_mb=30000,        # Memory limit in MB
+        anatomical_template=["MNI152NLin2009cAsym", "T1w"], # Output spaces
     )
 
     # 4. Check the results

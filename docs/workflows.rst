@@ -20,7 +20,7 @@ This workflow focuses on converting raw DICOM data into the Brain Imaging Data S
 4.  **Post-processing**: VoxelOps includes optional post-processing steps (see :func:`voxelops.utils.bids.post_process_heudiconv_output`) to refine BIDS outputs, such as adding ``IntendedFor`` fields to fieldmap JSONs.
 
 **Example**:
-A full example demonstrating the Heudiconv workflow can be found at `examples/full_pipeline.py`.
+An example demonstrating the Heudiconv workflow can be found at `examples/dicom_to_bids.py`.
 
 Diffusion MRI Preprocessing (QSIPrep)
 -------------------------------------
@@ -75,10 +75,3 @@ The `parcellate` package, integrated through VoxelOps, allows for parcellation o
 **Example**:
 An example of running QSIParc is available in `examples/qsiparc.py`.
 
-Full Pipeline Integration
--------------------------
-
-VoxelOps is designed to chain these procedures into a complete neuroimaging pipeline, enabling seamless processing from raw DICOMs to advanced connectivity measures.
-
-**Example**:
-A comprehensive example demonstrating a full pipeline (Heudiconv -> QSIPrep -> QSIRecon -> QSIParc) is provided in `examples/full_pipeline.py`.
