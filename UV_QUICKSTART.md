@@ -64,10 +64,10 @@ pytest
 pytest --cov=voxelops
 
 # Specific test file
-pytest tests/test_runners.py
+pytest tests/test_runners_qsiprep.py
 
 # Specific test
-pytest tests/test_runners.py::test_qsiprep_basic
+pytest tests/test_runners_qsiprep.py::test_basic_run
 ```
 
 ### Code Quality
@@ -296,7 +296,7 @@ uv pip sync --force
 uv pip install -e ".[dev]"
 
 # Check installation
-uv pip list | grep yalab
+uv pip list | grep voxelops
 
 # Reinstall
 uv pip uninstall voxelops

@@ -1,37 +1,46 @@
 voxelops.runners package
 ========================
 
-Submodules
-----------
+Procedure runner functions. Each runner validates inputs, builds a command,
+executes it (via Docker or direct Python call), and returns an execution
+record dict.
 
-voxelops.runners.heudiconv module
----------------------------------
+Shared Utilities
+----------------
+
+.. automodule:: voxelops.runners._base
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+HeudiConv
+---------
 
 .. automodule:: voxelops.runners.heudiconv
    :members:
    :undoc-members:
    :show-inheritance:
 
-voxelops.runners.qsiparc module
--------------------------------
-
-.. automodule:: voxelops.runners.qsiparc
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-voxelops.runners.qsiprep module
--------------------------------
+QSIPrep
+-------
 
 .. automodule:: voxelops.runners.qsiprep
    :members:
    :undoc-members:
    :show-inheritance:
 
-voxelops.runners.qsirecon module
---------------------------------
+QSIRecon
+--------
 
 .. automodule:: voxelops.runners.qsirecon
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+QSIParc
+-------
+
+.. automodule:: voxelops.runners.qsiparc
    :members:
    :undoc-members:
    :show-inheritance:

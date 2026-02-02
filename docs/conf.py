@@ -15,8 +15,8 @@ project = "VoxelOps"
 copyright = "2026, Gal Kepler"
 author = "Gal Kepler"
 
-version = "1.0.0"
-release = "1.0.0"
+version = "2.0.0"
+release = "2.0.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -25,8 +25,14 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
+    "sphinx.ext.intersphinx",
     "sphinx_rtd_theme",
 ]
+
+# Intersphinx mapping
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+}
 
 templates_path = ["_templates"]
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]

@@ -1,6 +1,13 @@
 voxelops package
 ================
 
+Top-level exports, version, and convenience imports.
+
+.. automodule:: voxelops
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 Subpackages
 -----------
 
@@ -11,21 +18,10 @@ Subpackages
    voxelops.schemas
    voxelops.utils
 
-Submodules
+Exceptions
 ----------
 
-voxelops.exceptions module
---------------------------
-
 .. automodule:: voxelops.exceptions
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: voxelops
    :members:
    :undoc-members:
    :show-inheritance:

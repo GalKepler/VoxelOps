@@ -1,37 +1,38 @@
 voxelops.schemas package
 ========================
 
-Submodules
-----------
+Typed dataclass schemas for procedure inputs, expected outputs, and
+default configurations. Each procedure defines three dataclasses:
+``Inputs``, ``Outputs``, and ``Defaults``.
 
-voxelops.schemas.heudiconv module
----------------------------------
+HeudiConv
+---------
 
 .. automodule:: voxelops.schemas.heudiconv
    :members:
    :undoc-members:
    :show-inheritance:
 
-voxelops.schemas.qsiparc module
--------------------------------
-
-.. automodule:: voxelops.schemas.qsiparc
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-voxelops.schemas.qsiprep module
--------------------------------
+QSIPrep
+-------
 
 .. automodule:: voxelops.schemas.qsiprep
    :members:
    :undoc-members:
    :show-inheritance:
 
-voxelops.schemas.qsirecon module
---------------------------------
+QSIRecon
+--------
 
 .. automodule:: voxelops.schemas.qsirecon
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+QSIParc
+-------
+
+.. automodule:: voxelops.schemas.qsiparc
    :members:
    :undoc-members:
    :show-inheritance:

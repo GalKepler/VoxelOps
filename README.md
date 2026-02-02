@@ -1,69 +1,74 @@
 # VoxelOps
 
-Clean, simple neuroimaging pipeline automation for brain banks.
+**Clean, simple neuroimaging pipeline automation for brain banks.**
 
-## Why This Package?
+[![Documentation Status](https://readthedocs.org/projects/voxelops/badge/?version=latest)](https://voxelops.readthedocs.io/en/latest/?badge=latest)
+[![CI Status](https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml/badge.svg)](https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-Brain banks need to process neuroimaging data **consistently**, **reproducibly**, and **auditablely**. This package makes that simple:
+---
 
-- ✅ **Simple Functions**: No classes, no complex objects - just functions that return dicts
-- ✅ **Clear Inputs/Outputs**: Each procedure explicitly defines what it needs and produces
-- ✅ **Perfect Reproducibility**: Exact Docker command stored in every execution record
-- ✅ **Database-Ready**: Results are plain dicts - trivial to save anywhere
-- ✅ **Brain Bank Standards**: Define your standard parameters once, use everywhere
-- ✅ **Comprehensive Logging**: Every execution logged to JSON with full details
+Brain banks need to process neuroimaging data **consistently**, **reproducibly**, and **auditably**. VoxelOps makes that simple by wrapping Docker-based neuroimaging tools into clean Python functions that return plain dicts -- ready for your database, your logs, and your peace of mind.
+
+## Highlights
+
+| Feature | Description |
+|---------|-------------|
+| **Simple Functions** | No classes, no inheritance -- just `run_*()` functions that return dicts |
+| **Clear Schemas** | Typed dataclass inputs, outputs, and defaults for every procedure |
+| **Reproducibility** | The exact Docker command is stored in every execution record |
+| **Database-Ready** | Results are plain dicts -- trivial to save to PostgreSQL, MongoDB, or JSON |
+| **Brain Bank Defaults** | Define your standard parameters once, reuse across all participants |
+| **Comprehensive Logging** | Every run logged to JSON with timestamps, duration, and exit codes |
 
 ## Installation
 
-### Using uv (recommended)
-
 ```bash
-# Install uv if you haven't already
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Install voxelops
+# Using uv (recommended)
 uv pip install voxelops
-```
 
-### Using pip
-
-```bash
+# Using pip
 pip install voxelops
 ```
 
-**Requirements**: Docker (the procedures run in containers)
+For development:
+
+```bash
+git clone https://github.com/yalab-devops/VoxelOps.git
+cd VoxelOps
+pip install -e ".[dev]"
+```
+
+**Requirements**: Python >= 3.8, Docker installed and accessible.
 
 ## Quick Start
 
 ```python
 from voxelops import run_qsiprep, QSIPrepInputs
 
-# Define inputs
 inputs = QSIPrepInputs(
     bids_dir="/data/bids",
     participant="01",
 )
 
-# Run QSIPrep with brain bank defaults
 result = run_qsiprep(inputs, nprocs=16)
 
-# Result is a dict with everything you need
 print(f"Completed in: {result['duration_human']}")
 print(f"Outputs: {result['expected_outputs'].qsiprep_dir}")
 print(f"Command: {' '.join(result['command'])}")
 
-# Save to your database - it's just a dict!
+# Save to your database -- it's just a dict
 db.processing_records.insert_one(result)
 ```
 
 ## Available Procedures
 
-| Procedure | Purpose | Function |
-|-----------|---------|----------|
-| **HeudiConv** | DICOM → BIDS conversion | `run_heudiconv()` |
-| **QSIPrep** | Diffusion MRI preprocessing | `run_qsiprep()` |
-| **QSIRecon** | Diffusion reconstruction & connectivity | `run_qsirecon()` |
-| **QSIParc** | Parcellation using parcellate | `run_qsiparc()` |
+| Procedure | Purpose | Function | Execution |
+|-----------|---------|----------|-----------|
+| **HeudiConv** | DICOM to BIDS conversion | `run_heudiconv()` | Docker |
+| **QSIPrep** | Diffusion MRI preprocessing | `run_qsiprep()` | Docker |
+| **QSIRecon** | Diffusion reconstruction & connectivity | `run_qsirecon()` | Docker |
+| **QSIParc** | Parcellation via `parcellate` | `run_qsiparc()` | Python (direct) |
 
 ## Full Pipeline Example
 
@@ -78,49 +83,37 @@ from voxelops import (
 
 participant = "01"
 
-# Step 1: DICOM → BIDS
+# Step 1: DICOM -> BIDS
 heudiconv_result = run_heudiconv(
-    inputs=HeudiconvInputs(
-        dicom_dir=Path("/data/dicoms"),
-        participant=participant,
-    ),
+    HeudiconvInputs(dicom_dir=Path("/data/dicoms"), participant=participant),
     heuristic=Path("/code/heuristic.py"),
 )
 
-# Step 2: QSIPrep (use output from step 1)
+# Step 2: Preprocessing
 qsiprep_result = run_qsiprep(
-    inputs=QSIPrepInputs(
-        bids_dir=heudiconv_result['expected_outputs'].bids_dir,
+    QSIPrepInputs(
+        bids_dir=heudiconv_result["expected_outputs"].bids_dir,
         participant=participant,
     ),
     nprocs=16,
-    mem_gb=32,
+    mem_mb=32000,
 )
 
-# Step 3: QSIRecon
+# Step 3: Reconstruction
 qsirecon_result = run_qsirecon(
-    inputs=QSIReconInputs(
-        qsiprep_dir=qsiprep_result['expected_outputs'].qsiprep_dir,
+    QSIReconInputs(
+        qsiprep_dir=qsiprep_result["expected_outputs"].qsiprep_dir,
         participant=participant,
     ),
 )
 
-# Step 4: QSIParc
+# Step 4: Parcellation
 qsiparc_result = run_qsiparc(
-    inputs=QSIParcInputs(
-        qsirecon_dir=qsirecon_result['expected_outputs'].qsirecon_dir,
+    QSIParcInputs(
+        qsirecon_dir=qsirecon_result["expected_outputs"].qsirecon_dir,
         participant=participant,
     ),
 )
-
-# All results are dicts - save to your database
-db.save_pipeline({
-    'participant': participant,
-    'heudiconv': heudiconv_result,
-    'qsiprep': qsiprep_result,
-    'qsirecon': qsirecon_result,
-    'qsiparc': qsiparc_result,
-})
 ```
 
 ## Brain Bank Standards
@@ -133,250 +126,155 @@ from voxelops import run_qsiprep, QSIPrepInputs, QSIPrepDefaults
 # Define brain bank standard configuration
 BRAIN_BANK_QSIPREP = QSIPrepDefaults(
     nprocs=16,
-    mem_gb=32,
+    mem_mb=32000,
     output_resolution=1.6,
-    output_spaces=["MNI152NLin2009cAsym"],
-    longitudinal=True,
-    docker_image="pennlinc/qsiprep:1.0.2",  # Pin version for consistency
+    anatomical_template=["MNI152NLin2009cAsym"],
+    docker_image="pennlinc/qsiprep:latest",
 )
 
 # Use for all participants
 for participant in participants:
-    inputs = QSIPrepInputs(
-        bids_dir=bids_root,
-        participant=participant,
-    )
-
-    result = run_qsiprep(inputs, BRAIN_BANK_QSIPREP)
+    inputs = QSIPrepInputs(bids_dir=bids_root, participant=participant)
+    result = run_qsiprep(inputs, config=BRAIN_BANK_QSIPREP)
     db.save_processing_record(result)
 ```
 
-## What's in the Execution Record?
+## Execution Record
 
 Every `run_*()` function returns a dict with:
 
 ```python
 {
-    "tool": "qsiprep",                          # Tool name
-    "participant": "01",                        # Participant label
-    "command": ["docker", "run", ...],          # Full Docker command
-    "exit_code": 0,                             # Process exit code
-    "start_time": "2026-01-26T10:00:00",       # ISO timestamp
-    "end_time": "2026-01-26T11:30:00",         # ISO timestamp
-    "duration_seconds": 5400,                   # Duration in seconds
-    "duration_human": "1:30:00",               # Human-readable duration
-    "success": True,                            # Boolean status
-    "log_file": "/path/to/log.json",           # Path to detailed log
-    "inputs": QSIPrepInputs(...),              # What you provided
-    "config": QSIPrepDefaults(...),            # Configuration used
-    "expected_outputs": QSIPrepOutputs(...),   # Where to find outputs
+    "tool": "qsiprep",
+    "participant": "01",
+    "command": ["docker", "run", ...],    # Exact Docker command
+    "exit_code": 0,
+    "start_time": "2026-01-26T10:00:00",  # ISO timestamp
+    "end_time": "2026-01-26T11:30:00",
+    "duration_seconds": 5400,
+    "duration_human": "1:30:00",
+    "success": True,
+    "log_file": "/path/to/log.json",
+    "inputs": QSIPrepInputs(...),          # What you provided
+    "config": QSIPrepDefaults(...),        # Configuration used
+    "expected_outputs": QSIPrepOutputs(...),  # Where to find outputs
 }
-```
-
-## Database Integration
-
-Results are just dicts - works with anything:
-
-### PostgreSQL (JSON column)
-
-```python
-from sqlalchemy import insert, JSON
-
-session.execute(
-    insert(processing_records).values(
-        participant_id=result['participant'],
-        tool=result['tool'],
-        timestamp=result['start_time'],
-        duration=result['duration_seconds'],
-        success=result['success'],
-        full_record=result,  # JSON column
-    )
-)
-```
-
-### MongoDB
-
-```python
-db.processing_records.insert_one({
-    'participant': result['participant'],
-    'tool': result['tool'],
-    'timestamp': result['start_time'],
-    'record': result,
-})
-```
-
-### SQLAlchemy ORM
-
-```python
-class ProcessingRecord(Base):
-    __tablename__ = 'processing_records'
-
-    id = Column(Integer, primary_key=True)
-    participant = Column(String)
-    tool = Column(String)
-    command = Column(JSON)
-    duration = Column(Float)
-    success = Column(Boolean)
-    timestamp = Column(DateTime)
-    full_record = Column(JSON)
-
-# Save
-record = ProcessingRecord(
-    participant=result['participant'],
-    tool=result['tool'],
-    command=result['command'],
-    duration=result['duration_seconds'],
-    success=result['success'],
-    timestamp=datetime.fromisoformat(result['start_time']),
-    full_record=result,
-)
-session.add(record)
-session.commit()
-```
-
-## Perfect Reproducibility
-
-The execution record contains the **exact Docker command** that was run. To reproduce:
-
-```python
-# Get record from database
-record = db.get_processing_record(participant='01', tool='qsiprep')
-
-# Extract command
-cmd = record['command']
-
-# Run it again - perfect reproduction!
-import subprocess
-subprocess.run(cmd)
 ```
 
 ## Inputs, Outputs, and Defaults
 
-Each procedure has three schemas:
+Each procedure has three dataclass schemas:
 
-### Inputs (Required)
-
-What the procedure needs to run:
+**Inputs** -- what the procedure needs:
 
 ```python
-from voxelops import QSIPrepInputs
-
 inputs = QSIPrepInputs(
-    bids_dir=Path("/data/bids"),      # Required
-    participant="01",                  # Required
-    output_dir=None,                   # Optional (has sensible default)
-    work_dir=None,                     # Optional (has sensible default)
+    bids_dir=Path("/data/bids"),  # Required
+    participant="01",              # Required
+    output_dir=None,               # Optional -- sensible default
+    work_dir=None,                 # Optional -- sensible default
+    bids_filters=None,             # Optional -- BIDS filter JSON
 )
 ```
 
-### Outputs (Generated)
-
-Where to find the results:
+**Outputs** -- generated automatically from inputs:
 
 ```python
-# Automatically generated from inputs
-outputs = result['expected_outputs']
-
-print(outputs.qsiprep_dir)      # /data/derivatives/qsiprep
-print(outputs.participant_dir)   # /data/derivatives/qsiprep/sub-01
-print(outputs.html_report)       # /data/derivatives/qsiprep/sub-01.html
+outputs = result["expected_outputs"]
+outputs.qsiprep_dir       # /data/derivatives/qsiprep
+outputs.participant_dir   # /data/derivatives/qsiprep/sub-01
+outputs.html_report       # /data/derivatives/qsiprep/sub-01.html
 ```
 
-### Defaults (Brain Bank Standards)
-
-Configuration parameters with sensible defaults:
+**Defaults** -- brain bank standard configuration:
 
 ```python
-from voxelops import QSIPrepDefaults
-
 config = QSIPrepDefaults(
-    nprocs=8,                                        # Number of cores
-    mem_gb=16,                                       # Memory limit
-    output_resolution=1.6,                           # Output resolution (mm)
-    output_spaces=["MNI152NLin2009cAsym"],          # Anatomical templates
-    longitudinal=True,                               # Longitudinal processing
-    docker_image="pennlinc/qsiprep:1.0.2",          # Docker image
+    nprocs=8,                                         # CPU cores
+    mem_mb=16000,                                     # Memory in MB
+    output_resolution=1.6,                            # Resolution in mm
+    anatomical_template=["MNI152NLin2009cAsym"],      # Template space(s)
+    longitudinal=False,                               # Longitudinal mode
+    skip_bids_validation=False,                       # BIDS validation
+    docker_image="pennlinc/qsiprep:latest",           # Docker image
 )
 
-# Use defaults
-result = run_qsiprep(inputs, config)
-
-# Or override specific parameters
-result = run_qsiprep(inputs, nprocs=32, mem_gb=64)
+# Pass config object, or override individual parameters:
+result = run_qsiprep(inputs, config=config)
+result = run_qsiprep(inputs, nprocs=32, mem_mb=64000)
 ```
 
-## Examples
+## Reproducibility
 
-See `examples/` directory:
+The execution record contains the exact Docker command. To reproduce any run:
 
-- **`full_pipeline.py`**: Complete DICOM → BIDS → QSIPrep → QSIRecon → QSIParc
-- **`brain_bank_integration.py`**: Database integration patterns and audit trails
+```python
+import subprocess
+
+record = db.get_processing_record(participant="01", tool="qsiprep")
+subprocess.run(record["command"])
+```
+
+## Project Structure
+
+```
+src/voxelops/
+    __init__.py            # Package exports and version
+    exceptions.py          # Exception hierarchy
+    runners/               # Procedure runners
+        _base.py           #   Shared: run_docker, validate_input_dir, validate_participant
+        heudiconv.py       #   DICOM -> BIDS
+        qsiprep.py         #   Diffusion preprocessing
+        qsirecon.py        #   Reconstruction & connectivity
+        qsiparc.py         #   Parcellation (via parcellate)
+    schemas/               # Typed dataclass schemas
+        heudiconv.py       #   HeudiconvInputs / Outputs / Defaults
+        qsiprep.py         #   QSIPrepInputs / Outputs / Defaults
+        qsirecon.py        #   QSIReconInputs / Outputs / Defaults
+        qsiparc.py         #   QSIParcInputs / Outputs / Defaults
+    utils/
+        bids.py            # Post-processing utilities for BIDS compliance
+examples/                  # Standalone usage scripts
+notebooks/                 # Jupyter tutorial notebooks (01-05)
+tests/                     # Pytest test suite
+docs/                      # Sphinx documentation source
+```
+
+## Examples and Notebooks
+
+- `examples/` -- standalone scripts for each procedure
+- `notebooks/` -- step-by-step Jupyter tutorials:
+  - `01_heudiconv_basics.ipynb` -- DICOM to BIDS conversion
+  - `02_qsiprep_basics.ipynb` -- Diffusion preprocessing
+  - `03_qsirecon_basics.ipynb` -- Reconstruction & connectivity
+  - `04_qsiparc_basics.ipynb` -- Parcellation
+  - `05_full_pipeline.ipynb` -- End-to-end pipeline
 
 ## Design Philosophy
 
-### What This Package Does
+**What VoxelOps does:**
+Build Docker commands, execute them, return structured execution records, define clear inputs/outputs, provide sensible defaults.
 
-✅ Builds Docker commands
-✅ Executes them
-✅ Returns execution records
-✅ Defines clear inputs/outputs
-✅ Provides sensible defaults
-
-### What This Package Doesn't Do
-
-❌ Complex workflow orchestration (use Airflow, Prefect, etc.)
-❌ Job scheduling (use your cluster scheduler)
-❌ Database management (use SQLAlchemy, MongoDB, etc.)
-❌ File validation (use BIDS validator separately)
-❌ Result aggregation (do that in your analysis code)
+**What VoxelOps does not do:**
+Workflow orchestration (use Airflow/Prefect), job scheduling (use your cluster scheduler), database management (use SQLAlchemy/MongoDB), result aggregation (do that in your analysis code).
 
 **Philosophy**: Do one thing well. Make it easy to integrate with your existing tools.
 
-## Why Not [Complex Alternative]?
-
-You might wonder why not use Nipype, BIDS Apps, or other frameworks?
-
-**For a brain bank, you need**:
-1. **Reproducibility** - Exact command stored in database
-2. **Auditability** - Clear logs of what was run
-3. **Database integration** - Easy to store processing records
-4. **Simplicity** - New team members can understand quickly
-
-**Complex frameworks** are designed for:
-- Building complex workflows with many dependencies
-- Graph-based execution
-- Advanced features you don't need for running Docker containers
-
-**voxelops** is designed for:
-- Running Docker containers with clear inputs/outputs
-- Storing execution records in your database
-- Perfect reproducibility (command is in the record)
-- Simple integration with your existing tools
-
-## Requirements
-
-- **Python**: >= 3.8
-- **Docker**: Must be installed and accessible
-- **Data**: BIDS-formatted neuroimaging data
-- **Docker Images**: The procedures run in containers (will be pulled automatically)
-
 ## Contributing
 
-Contributions welcome! This package is designed to be simple and maintainable.
+Contributions welcome! To add a new procedure:
 
-To add a new procedure:
 1. Create schema in `src/voxelops/schemas/your_procedure.py`
 2. Create runner in `src/voxelops/runners/your_procedure.py`
 3. Follow the pattern of existing procedures
-4. Add example usage
+4. Add tests in `tests/`
+5. Add an example in `examples/`
 
 ## License
 
-MIT License - see LICENSE file
+MIT License -- see [LICENSE](LICENSE) file.
 
 ## Citation
-
-If you use this package in your research, please cite:
 
 ```bibtex
 @software{voxelops,
@@ -389,6 +287,6 @@ If you use this package in your research, please cite:
 
 ## Support
 
-- **Issues**: https://github.com/yalab-devops/voxelops/issues
-- **Documentation**: See `examples/` directory
+- **Issues**: https://github.com/yalab-devops/VoxelOps/issues
+- **Documentation**: https://voxelops.readthedocs.io
 - **Email**: yalab.dev@gmail.com

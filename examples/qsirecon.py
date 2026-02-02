@@ -1,25 +1,23 @@
-from pathlib import Path
-from voxelops import (
-    run_qsirecon,
-    QSIReconInputs,
-    QSIReconDefaults,
-)
-import json
+#!/usr/bin/env python3
+"""QSIRecon diffusion reconstruction and connectivity.
 
-# Input paths
-qsiprep_dir = Path("/media/storage/yalab-dev/qsiprep_test/qsiprep_output/")
+This script demonstrates how to run QSIRecon for reconstruction
+within the VoxelOps framework.
+"""
+
+from pathlib import Path
+from voxelops import QSIReconInputs, run_qsirecon
+
+# Input paths -- update these to match your setup
+qsiprep_dir = Path("/data/derivatives/qsiprep/")
 participant = "01"
-recon_spec = Path("/home/galkepler/Projects/yalab-devops/VoxelOps/qsirecon_spec.yaml")
-fs_license = Path("/home/galkepler/misc/freesurfer/license.txt")
+recon_spec = Path("/config/recon_specs/dsi_studio_gqi.json")
+fs_license = Path("/opt/freesurfer/license.txt")
 
 # Output paths (optional)
-output_dir = Path("/media/storage/yalab-dev/qsiprep_test/qsirecon_output/")
-work_dir = Path("/media/storage/yalab-dev/qsiprep_test/work/qsirecon/")
+output_dir = Path("/data/derivatives/qsirecon/")
+work_dir = Path("/data/work/qsirecon/")
 
-# Datasets to include
-datasets = {
-    "atlases": "/media/storage/yalab-dev/voxelops/Schaefer2018Tian2020_atlases"
-}
 # Create inputs
 inputs = QSIReconInputs(
     qsiprep_dir=qsiprep_dir,
@@ -27,50 +25,11 @@ inputs = QSIReconInputs(
     recon_spec=recon_spec,
     output_dir=output_dir,
     work_dir=work_dir,
-    datasets=datasets,
-    atlases=['Schaefer2018N100n7Tian2020S1',
- 'Schaefer2018N100n7Tian2020S2',
- 'Schaefer2018N100n7Tian2020S3',
- 'Schaefer2018N100n7Tian2020S4',
- 'Schaefer2018N200n7Tian2020S1',
- 'Schaefer2018N200n7Tian2020S2',
- 'Schaefer2018N200n7Tian2020S3',
- 'Schaefer2018N200n7Tian2020S4',
- 'Schaefer2018N300n7Tian2020S1',
- 'Schaefer2018N300n7Tian2020S2',
- 'Schaefer2018N300n7Tian2020S3',
- 'Schaefer2018N300n7Tian2020S4',
- 'Schaefer2018N400n7Tian2020S1',
- 'Schaefer2018N400n7Tian2020S2',
- 'Schaefer2018N400n7Tian2020S3',
- 'Schaefer2018N400n7Tian2020S4',
- 'Schaefer2018N500n7Tian2020S1',
- 'Schaefer2018N500n7Tian2020S2',
- 'Schaefer2018N500n7Tian2020S3',
- 'Schaefer2018N500n7Tian2020S4',
- 'Schaefer2018N600n7Tian2020S1',
- 'Schaefer2018N600n7Tian2020S2',
- 'Schaefer2018N600n7Tian2020S3',
- 'Schaefer2018N600n7Tian2020S4',
- 'Schaefer2018N800n7Tian2020S1',
- 'Schaefer2018N800n7Tian2020S2',
- 'Schaefer2018N800n7Tian2020S3',
- 'Schaefer2018N800n7Tian2020S4',
- 'Schaefer2018N900n7Tian2020S1',
- 'Schaefer2018N900n7Tian2020S2',
- 'Schaefer2018N900n7Tian2020S3',
- 'Schaefer2018N900n7Tian2020S4',
- 'Schaefer2018N1000n7Tian2020S1',
- 'Schaefer2018N1000n7Tian2020S2',
- 'Schaefer2018N1000n7Tian2020S3',
- 'Schaefer2018N1000n7Tian2020S4']
 )
-
 
 # Run with defaults
-result = run_qsirecon(
-    inputs, fs_license=fs_license, docker_image="pennlinc/qsirecon:1.1.1"
-)
+result = run_qsirecon(inputs, fs_license=fs_license)
 
 print(f"Success: {result['success']}")
 print(f"Duration: {result['duration_human']}")
+print(f"Output: {result['expected_outputs'].qsirecon_dir}")

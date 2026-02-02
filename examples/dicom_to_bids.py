@@ -1,23 +1,19 @@
 #!/usr/bin/env python3
-"""DICOM to BIDS coversion via Heudiconv
+"""DICOM to BIDS conversion via HeudiConv.
 
-This script demonstrates how to convert DICOM files to BIDS format using Heudiconv
+This script demonstrates how to convert DICOM files to BIDS format using HeudiConv
 within the VoxelOps framework. It sets up the necessary inputs and configurations,
 executes the conversion, and prints out the results.
 """
 
 from pathlib import Path
-from voxelops import (
-    run_heudiconv,
-    HeudiconvInputs,
-    HeudiconvDefaults,
-)
-import json
 
-# Your data paths
-DATA_ROOT = Path("/media/storage/yalab-dev/test_dicom/20251003_0917/")
-HEURISTIC_FILE = Path("/home/galkepler/Projects/yalab-devops/VoxelOps/heuristic.py")
-OUTPUT_DIR = Path("/media/storage/yalab-dev/qsiprep_test/heudiconv_test/")
+from voxelops import HeudiconvInputs, run_heudiconv
+
+# Your data paths -- update these to match your setup
+DATA_ROOT = Path("/data/raw/dicom/")
+HEURISTIC_FILE = Path("/config/heuristics/brain_bank.py")
+OUTPUT_DIR = Path("/data/bids/")
 
 # Participant to process
 PARTICIPANT = "01"
@@ -31,7 +27,7 @@ inputs = HeudiconvInputs(
 )
 
 # Run with defaults
-result = run_heudiconv(inputs, heuristic=HEURISTIC_FILE, overwrite=True, bids=None)
+result = run_heudiconv(inputs, heuristic=HEURISTIC_FILE, overwrite=True)
 
 # Check result
 print(f"Success: {result['success']}")
