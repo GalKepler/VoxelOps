@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>voxelops.utils.bids &mdash; VoxelOps 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            VoxelOps
+          </a>
+              <div class="version">
+                1.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">voxelops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VoxelOps</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">voxelops.utils.bids</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for voxelops.utils.bids</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;BIDS post-processing utilities for HeudiConv output.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">stat</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+
+<div class="viewcode-block" id="post_process_heudiconv_output">
+<a class="viewcode-back" href="../../../source/voxelops.utils.html#voxelops.utils.bids.post_process_heudiconv_output">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">post_process_heudiconv_output</span><span class="p">(</span>
+    <span class="n">bids_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">participant</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Post-process HeudiConv output to ensure BIDS compliance.</span>
+
+<span class="sd">    Orchestrates all post-processing steps:</span>
+
+<span class="sd">    1. Verify fieldmap EPI files exist</span>
+<span class="sd">    2. Add IntendedFor fields to fmap JSONs</span>
+<span class="sd">    3. Hide bval/bvec from fmap directories (rename with dot prefix)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bids_dir : Path</span>
+<span class="sd">        Root BIDS directory.</span>
+<span class="sd">    participant : str</span>
+<span class="sd">        Participant ID (without &#39;sub-&#39; prefix).</span>
+<span class="sd">    session : Optional[str], optional</span>
+<span class="sd">        Session ID (without &#39;ses-&#39; prefix), if applicable, by default None.</span>
+<span class="sd">    dry_run : bool, optional</span>
+<span class="sd">        If True, report changes without modifying files, by default False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict[str, Any]</span>
+<span class="sd">        A dictionary with results:</span>
+
+<span class="sd">        - &#39;success&#39;: bool</span>
+<span class="sd">        - &#39;verification&#39;: dict</span>
+<span class="sd">        - &#39;intended_for&#39;: dict</span>
+<span class="sd">        - &#39;cleanup&#39;: dict</span>
+<span class="sd">        - &#39;errors&#39;: list</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;verification&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;intended_for&quot;</span><span class="p">:</span> <span class="p">{},</span>
+        <span class="s2">&quot;cleanup&quot;</span><span class="p">:</span> <span class="p">{},</span>
+    <span class="p">}</span>
+
+    <span class="c1"># Build participant directory path</span>
+    <span class="n">participant_dir</span> <span class="o">=</span> <span class="n">bids_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;sub-</span><span class="si">{</span><span class="n">participant</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="k">if</span> <span class="n">session</span><span class="p">:</span>
+        <span class="n">participant_dir</span> <span class="o">=</span> <span class="n">participant_dir</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;ses-</span><span class="si">{</span><span class="n">session</span><span class="si">}</span><span class="s2">&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">participant_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Participant directory not found: </span><span class="si">{</span><span class="n">participant_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="c1"># Step 1: Verify fieldmap EPI files exist</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">verification_result</span> <span class="o">=</span> <span class="n">verify_fmap_epi_files</span><span class="p">(</span><span class="n">participant_dir</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;verification&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">verification_result</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">verification_result</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">verification_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;errors&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Verification failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Step 2: Add IntendedFor to fieldmap JSONs</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">intended_for_result</span> <span class="o">=</span> <span class="n">add_intended_for_to_fmaps</span><span class="p">(</span>
+            <span class="n">participant_dir</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">dry_run</span>
+        <span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;intended_for&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">intended_for_result</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">intended_for_result</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">intended_for_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;errors&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;IntendedFor processing failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="c1"># Step 3: Hide bval/bvec from fmap directories</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">cleanup_result</span> <span class="o">=</span> <span class="n">remove_bval_bvec_from_fmaps</span><span class="p">(</span><span class="n">participant_dir</span><span class="p">,</span> <span class="n">session</span><span class="p">,</span> <span class="n">dry_run</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;cleanup&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cleanup_result</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">cleanup_result</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]:</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">cleanup_result</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;errors&quot;</span><span class="p">,</span> <span class="p">[]))</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cleanup failed: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="verify_fmap_epi_files">
+<a class="viewcode-back" href="../../../source/voxelops.utils.html#voxelops.utils.bids.verify_fmap_epi_files">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">verify_fmap_epi_files</span><span class="p">(</span>
+    <span class="n">participant_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Verify that expected fieldmap EPI files exist.</span>
+
+<span class="sd">    Checks for existence of ``*acq-dwi*_epi.nii.gz`` and ``.json`` in ``fmap/`` directory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    participant_dir : Path</span>
+<span class="sd">        Path to participant directory (or session directory if session exists).</span>
+<span class="sd">    session : Optional[str], optional</span>
+<span class="sd">        Session ID (for logging purposes), by default None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict[str, Any]</span>
+<span class="sd">        Dictionary with verification results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;found_files&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;missing_files&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[],</span>
+    <span class="p">}</span>
+
+    <span class="n">fmap_dir</span> <span class="o">=</span> <span class="n">participant_dir</span> <span class="o">/</span> <span class="s2">&quot;fmap&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fmap_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fieldmap directory not found: </span><span class="si">{</span><span class="n">fmap_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="c1"># Look for DWI fieldmap files</span>
+    <span class="n">dwi_epi_nii</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fmap_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*acq-dwi*_epi.nii.gz&quot;</span><span class="p">))</span>
+    <span class="n">dwi_epi_json</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fmap_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*acq-dwi*_epi.json&quot;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">dwi_epi_nii</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;found_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dwi_epi_nii</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;missing_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;*acq-dwi*_epi.nii.gz&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No DWI fieldmap NIfTI files found&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">dwi_epi_json</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;found_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">dwi_epi_json</span><span class="p">])</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;missing_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;*acq-dwi*_epi.json&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No DWI fieldmap JSON files found&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="add_intended_for_to_fmaps">
+<a class="viewcode-back" href="../../../source/voxelops.utils.html#voxelops.utils.bids.add_intended_for_to_fmaps">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_intended_for_to_fmaps</span><span class="p">(</span>
+    <span class="n">participant_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Add IntendedFor fields to fieldmap JSON files.</span>
+
+<span class="sd">    Maps fieldmaps to target files based on acquisition type:</span>
+
+<span class="sd">    - ``acq-dwi*_epi.json`` -&gt; all ``dwi/*_dwi.nii.gz`` files</span>
+<span class="sd">    - ``acq-func*_epi.json`` -&gt; all ``func/*_bold.nii.gz`` files</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    participant_dir : Path</span>
+<span class="sd">        Path to participant directory (or session directory if session exists).</span>
+<span class="sd">    session : Optional[str], optional</span>
+<span class="sd">        Session ID (for building relative paths), by default None.</span>
+<span class="sd">    dry_run : bool, optional</span>
+<span class="sd">        If True, report changes without modifying files, by default False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict[str, Any]</span>
+<span class="sd">        Dictionary with processing results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;updated_files&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;dry_run&quot;</span><span class="p">:</span> <span class="n">dry_run</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">fmap_dir</span> <span class="o">=</span> <span class="n">participant_dir</span> <span class="o">/</span> <span class="s2">&quot;fmap&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fmap_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fieldmap directory not found: </span><span class="si">{</span><span class="n">fmap_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="c1"># Find all fieldmap JSON files</span>
+    <span class="n">fmap_jsons</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">fmap_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_epi.json&quot;</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fmap_jsons</span><span class="p">:</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;No fieldmap JSON files found&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="k">for</span> <span class="n">fmap_json</span> <span class="ow">in</span> <span class="n">fmap_jsons</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Determine acquisition type from filename</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">fmap_json</span><span class="o">.</span><span class="n">name</span>
+
+            <span class="k">if</span> <span class="s2">&quot;acq-dwi&quot;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="c1"># DWI fieldmap -&gt; find DWI targets</span>
+                <span class="n">target_files</span> <span class="o">=</span> <span class="n">_find_dwi_targets</span><span class="p">(</span><span class="n">participant_dir</span><span class="p">)</span>
+                <span class="n">acq_type</span> <span class="o">=</span> <span class="s2">&quot;DWI&quot;</span>
+            <span class="k">elif</span> <span class="s2">&quot;acq-func&quot;</span> <span class="ow">in</span> <span class="n">filename</span><span class="p">:</span>
+                <span class="c1"># Functional fieldmap -&gt; find all BOLD targets</span>
+                <span class="n">target_files</span> <span class="o">=</span> <span class="n">_find_func_targets</span><span class="p">(</span><span class="n">participant_dir</span><span class="p">)</span>
+                <span class="n">acq_type</span> <span class="o">=</span> <span class="s2">&quot;functional&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unknown acquisition type in </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">target_files</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;No target files found for </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># Build IntendedFor paths (relative to session or participant directory)</span>
+            <span class="n">intended_for_paths</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">_build_intended_for_path</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">participant_dir</span><span class="p">,</span> <span class="n">session</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="n">target_files</span>
+            <span class="p">]</span>
+
+            <span class="c1"># Update JSON file</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dry_run</span><span class="p">:</span>
+                <span class="n">success</span> <span class="o">=</span> <span class="n">_update_json_sidecar</span><span class="p">(</span><span class="n">fmap_json</span><span class="p">,</span> <span class="n">intended_for_paths</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;updated_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="p">{</span>
+                            <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">fmap_json</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                            <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">acq_type</span><span class="p">,</span>
+                            <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="n">intended_for_paths</span><span class="p">,</span>
+                        <span class="p">}</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to update </span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="s2">&quot;updated_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">fmap_json</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                        <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="n">acq_type</span><span class="p">,</span>
+                        <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="n">intended_for_paths</span><span class="p">,</span>
+                        <span class="s2">&quot;note&quot;</span><span class="p">:</span> <span class="s2">&quot;Dry run - not modified&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error processing </span><span class="si">{</span><span class="n">fmap_json</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<div class="viewcode-block" id="remove_bval_bvec_from_fmaps">
+<a class="viewcode-back" href="../../../source/voxelops.utils.html#voxelops.utils.bids.remove_bval_bvec_from_fmaps">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_bval_bvec_from_fmaps</span><span class="p">(</span>
+    <span class="n">participant_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">dry_run</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Hide .bvec and .bval files from fmap directories by renaming with dot prefix.</span>
+
+<span class="sd">    These files are incorrectly generated by dcm2niix for fieldmaps</span>
+<span class="sd">    and are not BIDS-compliant for EPI fieldmaps. Instead of deleting,</span>
+<span class="sd">    we rename them with a leading dot to hide them (e.g., ``.filename.bvec``).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    participant_dir : Path</span>
+<span class="sd">        Path to participant directory (or session directory if session exists).</span>
+<span class="sd">    session : Optional[str], optional</span>
+<span class="sd">        Session ID (for logging purposes), by default None.</span>
+<span class="sd">    dry_run : bool, optional</span>
+<span class="sd">        If True, report files to hide without renaming, by default False.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict[str, Any]</span>
+<span class="sd">        Dictionary with cleanup results.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="s2">&quot;hidden_files&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;errors&quot;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s2">&quot;dry_run&quot;</span><span class="p">:</span> <span class="n">dry_run</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">fmap_dir</span> <span class="o">=</span> <span class="n">participant_dir</span> <span class="o">/</span> <span class="s2">&quot;fmap&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">fmap_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Fieldmap directory not found: </span><span class="si">{</span><span class="n">fmap_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="c1"># Find all .bvec and .bval files in fmap directory (excluding already hidden ones)</span>
+    <span class="n">bvec_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fmap_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_epi.bvec&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)]</span>
+    <span class="n">bval_files</span> <span class="o">=</span> <span class="p">[</span><span class="n">f</span> <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fmap_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_epi.bval&quot;</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">f</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)]</span>
+
+    <span class="n">files_to_hide</span> <span class="o">=</span> <span class="n">bvec_files</span> <span class="o">+</span> <span class="n">bval_files</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">files_to_hide</span><span class="p">:</span>
+        <span class="c1"># Not an error - just means files are already clean/hidden</span>
+        <span class="k">return</span> <span class="n">results</span>
+
+    <span class="k">for</span> <span class="n">file_path</span> <span class="ow">in</span> <span class="n">files_to_hide</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">dry_run</span><span class="p">:</span>
+                <span class="c1"># Rename with leading dot to hide</span>
+                <span class="n">hidden_path</span> <span class="o">=</span> <span class="n">file_path</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">file_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span>
+                <span class="n">file_path</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">hidden_path</span><span class="p">)</span>
+                <span class="n">results</span><span class="p">[</span><span class="s2">&quot;hidden_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;original&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                        <span class="s2">&quot;hidden_as&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">hidden_path</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">results</span><span class="p">[</span><span class="s2">&quot;hidden_files&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">{</span>
+                        <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="o">.</span><span class="n">name</span><span class="p">),</span>
+                        <span class="s2">&quot;will_hide_as&quot;</span><span class="p">:</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">file_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;note&quot;</span><span class="p">:</span> <span class="s2">&quot;Dry run - not renamed&quot;</span><span class="p">,</span>
+                    <span class="p">}</span>
+                <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;errors&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Failed to hide </span><span class="si">{</span><span class="n">file_path</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">results</span><span class="p">[</span><span class="s2">&quot;success&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+
+<span class="c1"># Private helper functions</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_dwi_targets</span><span class="p">(</span><span class="n">participant_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find all DWI NIfTI files in dwi directory.&quot;&quot;&quot;</span>
+    <span class="n">dwi_dir</span> <span class="o">=</span> <span class="n">participant_dir</span> <span class="o">/</span> <span class="s2">&quot;dwi&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">dwi_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">dwi_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_dwi.nii.gz&quot;</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_func_targets</span><span class="p">(</span><span class="n">participant_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="n">Path</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Find all functional BOLD NIfTI files in func directory.&quot;&quot;&quot;</span>
+    <span class="n">func_dir</span> <span class="o">=</span> <span class="n">participant_dir</span> <span class="o">/</span> <span class="s2">&quot;func&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">func_dir</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">func_dir</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s2">&quot;*_bold.nii.gz&quot;</span><span class="p">))</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_build_intended_for_path</span><span class="p">(</span>
+    <span class="n">target_file</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">participant_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span>
+    <span class="n">session</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Build BIDS-compliant relative path for IntendedFor field.</span>
+
+<span class="sd">    Paths are relative to the session directory (if session exists)</span>
+<span class="sd">    or participant directory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    target_file : Path</span>
+<span class="sd">        Absolute path to target file.</span>
+<span class="sd">    participant_dir : Path</span>
+<span class="sd">        Path to participant/session directory.</span>
+<span class="sd">    session : Optional[str], optional</span>
+<span class="sd">        Session ID if applicable, by default None.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    str</span>
+<span class="sd">        Relative path string for IntendedFor field.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Get path relative to participant_dir</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">rel_path</span> <span class="o">=</span> <span class="n">target_file</span><span class="o">.</span><span class="n">relative_to</span><span class="p">(</span><span class="n">participant_dir</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">session</span><span class="p">:</span>  <span class="c1"># Add &quot;ses-{session}&quot; before</span>
+            <span class="n">rel_path</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;ses-</span><span class="si">{</span><span class="n">session</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">rel_path</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">rel_path</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="c1"># If relative_to fails, build manually</span>
+        <span class="c1"># This shouldn&#39;t happen if paths are constructed correctly</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">target_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_update_json_sidecar</span><span class="p">(</span><span class="n">json_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">,</span> <span class="n">intended_for</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update JSON sidecar file with IntendedFor field.</span>
+
+<span class="sd">    Reads existing JSON, adds/updates IntendedFor field, and writes back.</span>
+<span class="sd">    Preserves all existing fields. Handles read-only files by making them writable.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    json_path : Path</span>
+<span class="sd">        Path to JSON file.</span>
+<span class="sd">    intended_for : List[str]</span>
+<span class="sd">        List of relative paths for IntendedFor field.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    bool</span>
+<span class="sd">        True if successful, False otherwise.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Read existing JSON</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">_read_json_sidecar</span><span class="p">(</span><span class="n">json_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">data</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># Add IntendedFor field (BIDS spec requires array)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;IntendedFor&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">intended_for</span>
+
+        <span class="c1"># Make file writable if it&#39;s read-only (HeudiConv creates read-only files)</span>
+        <span class="n">current_mode</span> <span class="o">=</span> <span class="n">json_path</span><span class="o">.</span><span class="n">stat</span><span class="p">()</span><span class="o">.</span><span class="n">st_mode</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">current_mode</span> <span class="o">&amp;</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IWUSR</span><span class="p">):</span>
+            <span class="c1"># Add user write permission</span>
+            <span class="n">json_path</span><span class="o">.</span><span class="n">chmod</span><span class="p">(</span><span class="n">current_mode</span> <span class="o">|</span> <span class="n">stat</span><span class="o">.</span><span class="n">S_IWUSR</span><span class="p">)</span>
+
+        <span class="c1"># Write back with formatting</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error updating </span><span class="si">{</span><span class="n">json_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_read_json_sidecar</span><span class="p">(</span><span class="n">json_path</span><span class="p">:</span> <span class="n">Path</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Read JSON sidecar file with error handling.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    json_path : Path</span>
+<span class="sd">        Path to JSON file.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Optional[Dict[str, Any]]</span>
+<span class="sd">        Dictionary with JSON contents, or None if reading fails.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">json_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Error reading </span><span class="si">{</span><span class="n">json_path</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Gal Kepler.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

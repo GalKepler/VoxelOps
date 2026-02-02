@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>voxelops.runners.qsiparc &mdash; VoxelOps 1.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=19f00094" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            VoxelOps
+              <img src="../../../_static/Gemini_Generated_Image_m9bi47m9bi47m9bi.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                1.0.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../workflows.html">Existing Workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">voxelops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">VoxelOps</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">voxelops.runners.qsiparc</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for voxelops.runners.qsiparc</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;QSIParc parcellation runner using parcellate package.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">datetime</span><span class="w"> </span><span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">voxelops.runners._base</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">validate_input_dir</span><span class="p">,</span>
+    <span class="n">validate_participant</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">voxelops.schemas.qsiparc</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">QSIParcInputs</span><span class="p">,</span>
+    <span class="n">QSIParcOutputs</span><span class="p">,</span>
+    <span class="n">QSIParcDefaults</span><span class="p">,</span>
+<span class="p">)</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">voxelops.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcedureExecutionError</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">parcellate.interfaces.qsirecon.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">QSIReconConfig</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">parcellate.interfaces.qsirecon.qsirecon</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_parcellations</span>
+
+
+<div class="viewcode-block" id="run_qsiparc">
+<a class="viewcode-back" href="../../../source/voxelops.runners.html#voxelops.runners.qsiparc.run_qsiparc">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">run_qsiparc</span><span class="p">(</span>
+    <span class="n">inputs</span><span class="p">:</span> <span class="n">QSIParcInputs</span><span class="p">,</span> <span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QSIParcDefaults</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">overrides</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Run parcellation on QSIRecon outputs using parcellate.</span>
+
+<span class="sd">    Atlases are auto-discovered from the QSIRecon derivatives directory</span>
+<span class="sd">    (BIDS dseg files). No manual atlas list is needed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    inputs : QSIParcInputs</span>
+<span class="sd">        Required inputs (qsirecon_dir, participant, etc.).</span>
+<span class="sd">    config : Optional[QSIParcDefaults], optional</span>
+<span class="sd">        Configuration (uses brain bank defaults if not provided), by default None.</span>
+<span class="sd">    **overrides</span>
+<span class="sd">        Override any config parameter.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Dict[str, Any]</span>
+<span class="sd">        Execution record with:</span>
+<span class="sd">            - tool: &quot;qsiparc&quot;</span>
+<span class="sd">            - participant: Participant label</span>
+<span class="sd">            - start_time, end_time: ISO format timestamps</span>
+<span class="sd">            - duration_seconds, duration_human: Execution duration</span>
+<span class="sd">            - success: Boolean success status</span>
+<span class="sd">            - output_files: List of output TSV paths</span>
+<span class="sd">            - inputs: QSIParcInputs instance</span>
+<span class="sd">            - config: QSIParcDefaults instance</span>
+<span class="sd">            - expected_outputs: QSIParcOutputs instance</span>
+
+<span class="sd">    Raises</span>
+<span class="sd">    ------</span>
+<span class="sd">    InputValidationError</span>
+<span class="sd">        If inputs are invalid.</span>
+<span class="sd">    ProcedureExecutionError</span>
+<span class="sd">        If parcellation fails.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; inputs = QSIParcInputs(</span>
+<span class="sd">    ...     qsirecon_dir=Path(&quot;/data/derivatives/qsirecon&quot;),</span>
+<span class="sd">    ...     participant=&quot;01&quot;,</span>
+<span class="sd">    ... )</span>
+<span class="sd">    &gt;&gt;&gt; result = run_qsiparc(inputs)</span>
+<span class="sd">    &gt;&gt;&gt; print(result[&#39;output_files&#39;])</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Use brain bank defaults if config not provided</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">config</span> <span class="ow">or</span> <span class="n">QSIParcDefaults</span><span class="p">()</span>
+
+    <span class="c1"># Apply overrides</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">overrides</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+    <span class="c1"># Validate inputs</span>
+    <span class="n">validate_input_dir</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">qsirecon_dir</span><span class="p">,</span> <span class="s2">&quot;QSIRecon&quot;</span><span class="p">)</span>
+    <span class="n">validate_participant</span><span class="p">(</span><span class="n">inputs</span><span class="o">.</span><span class="n">qsirecon_dir</span><span class="p">,</span> <span class="n">inputs</span><span class="o">.</span><span class="n">participant</span><span class="p">)</span>
+
+    <span class="c1"># Setup output directory</span>
+    <span class="n">output_dir</span> <span class="o">=</span> <span class="n">inputs</span><span class="o">.</span><span class="n">output_dir</span> <span class="ow">or</span> <span class="n">inputs</span><span class="o">.</span><span class="n">qsirecon_dir</span><span class="o">.</span><span class="n">parent</span>
+    <span class="n">output_dir</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Generate expected outputs</span>
+    <span class="n">expected_outputs</span> <span class="o">=</span> <span class="n">QSIParcOutputs</span><span class="o">.</span><span class="n">from_inputs</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">)</span>
+
+    <span class="c1"># Build parcellate config</span>
+    <span class="n">log_level</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">config</span><span class="o">.</span><span class="n">log_level</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">parcellate_config</span> <span class="o">=</span> <span class="n">QSIReconConfig</span><span class="p">(</span>
+        <span class="n">input_root</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">qsirecon_dir</span><span class="p">,</span>
+        <span class="n">output_dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">,</span>
+        <span class="n">subjects</span><span class="o">=</span><span class="p">[</span><span class="n">inputs</span><span class="o">.</span><span class="n">participant</span><span class="p">],</span>
+        <span class="n">sessions</span><span class="o">=</span><span class="p">[</span><span class="n">inputs</span><span class="o">.</span><span class="n">session</span><span class="p">]</span> <span class="k">if</span> <span class="n">inputs</span><span class="o">.</span><span class="n">session</span> <span class="k">else</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">mask</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span>
+        <span class="n">background_label</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">background_label</span><span class="p">,</span>
+        <span class="n">resampling_target</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">resampling_target</span><span class="p">,</span>
+        <span class="n">force</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">force</span><span class="p">,</span>
+        <span class="n">log_level</span><span class="o">=</span><span class="n">log_level</span><span class="p">,</span>
+        <span class="n">atlases</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">atlases</span> <span class="ow">or</span> <span class="p">[],</span>
+        <span class="n">n_jobs</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">n_jobs</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">n_jobs</span><span class="p">,</span>
+        <span class="n">n_procs</span><span class="o">=</span><span class="n">inputs</span><span class="o">.</span><span class="n">n_procs</span> <span class="ow">or</span> <span class="n">config</span><span class="o">.</span><span class="n">n_procs</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">80</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Running qsiparc for participant </span><span class="si">{</span><span class="n">inputs</span><span class="o">.</span><span class="n">participant</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">80</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Input: </span><span class="si">{</span><span class="n">inputs</span><span class="o">.</span><span class="n">qsirecon_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output: </span><span class="si">{</span><span class="n">output_dir</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">80</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">output_files</span> <span class="o">=</span> <span class="n">run_parcellations</span><span class="p">(</span><span class="n">parcellate_config</span><span class="p">)</span>
+
+        <span class="n">end_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">duration</span> <span class="o">=</span> <span class="n">end_time</span> <span class="o">-</span> <span class="n">start_time</span>
+
+        <span class="n">record</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;tool&quot;</span><span class="p">:</span> <span class="s2">&quot;qsiparc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;participant&quot;</span><span class="p">:</span> <span class="n">inputs</span><span class="o">.</span><span class="n">participant</span><span class="p">,</span>
+            <span class="s2">&quot;start_time&quot;</span><span class="p">:</span> <span class="n">start_time</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="s2">&quot;end_time&quot;</span><span class="p">:</span> <span class="n">end_time</span><span class="o">.</span><span class="n">isoformat</span><span class="p">(),</span>
+            <span class="s2">&quot;duration_seconds&quot;</span><span class="p">:</span> <span class="n">duration</span><span class="o">.</span><span class="n">total_seconds</span><span class="p">(),</span>
+            <span class="s2">&quot;duration_human&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">duration</span><span class="p">),</span>
+            <span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">&quot;output_files&quot;</span><span class="p">:</span> <span class="n">output_files</span><span class="p">,</span>
+            <span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">inputs</span><span class="p">,</span>
+            <span class="s2">&quot;config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">,</span>
+            <span class="s2">&quot;expected_outputs&quot;</span><span class="p">:</span> <span class="n">expected_outputs</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">80</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;qsiparc completed successfully&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Duration: </span><span class="si">{</span><span class="n">duration</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Output files: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">output_files</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="s1">&#39;=&#39;</span><span class="o">*</span><span class="mi">80</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">record</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">ProcedureExecutionError</span><span class="p">):</span>
+            <span class="k">raise</span>
+        <span class="k">raise</span> <span class="n">ProcedureExecutionError</span><span class="p">(</span>
+            <span class="n">procedure_name</span><span class="o">=</span><span class="s2">&quot;qsiparc&quot;</span><span class="p">,</span>
+            <span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+            <span class="n">original_error</span><span class="o">=</span><span class="n">e</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2026, Gal Kepler.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

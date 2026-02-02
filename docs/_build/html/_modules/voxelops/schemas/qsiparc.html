@@ -32,9 +32,10 @@
           
           <a href="../../../index.html" class="icon icon-home">
             VoxelOps
+              <img src="../../../_static/Gemini_Generated_Image_m9bi47m9bi47m9bi.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                2.0.0
+                1.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
@@ -46,7 +47,10 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../workflows.html">Existing Workflows</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../source/modules.html">voxelops</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials.html">Tutorials</a></li>
 </ul>
 
         </div>
@@ -82,7 +86,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">parcellate.interfaces.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">AtlasDefinition</span>
 
 <div class="viewcode-block" id="QSIParcInputs">
-<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.QSIParcInputs">[docs]</a>
+<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.schemas.qsiparc.QSIParcInputs">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">QSIParcInputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Required inputs for QSIParc parcellation.</span>
@@ -114,16 +118,19 @@
     <span class="n">n_jobs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="n">n_procs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
+<div class="viewcode-block" id="QSIParcInputs.__post_init__">
+<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.schemas.qsiparc.QSIParcInputs.__post_init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Ensure paths are Path objects.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">qsirecon_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">qsirecon_dir</span><span class="p">)</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">output_dir</span><span class="p">)</span></div>
+</div>
 
 
 
 <div class="viewcode-block" id="QSIParcOutputs">
-<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.QSIParcOutputs">[docs]</a>
+<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.schemas.qsiparc.QSIParcOutputs">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">QSIParcOutputs</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Expected outputs from QSIParc.</span>
@@ -137,7 +144,7 @@
     <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span>
 
 <div class="viewcode-block" id="QSIParcOutputs.from_inputs">
-<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.QSIParcOutputs.from_inputs">[docs]</a>
+<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.schemas.qsiparc.QSIParcOutputs.from_inputs">[docs]</a>
     <span class="nd">@classmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">from_inputs</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">inputs</span><span class="p">:</span> <span class="n">QSIParcInputs</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate expected output paths from inputs.</span>
@@ -160,7 +167,7 @@
 
 
 <div class="viewcode-block" id="QSIParcDefaults">
-<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.QSIParcDefaults">[docs]</a>
+<a class="viewcode-back" href="../../../source/voxelops.schemas.html#voxelops.schemas.qsiparc.QSIParcDefaults">[docs]</a>
 <span class="nd">@dataclass</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">QSIParcDefaults</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Default configuration for QSIParc (brain bank standards).</span>
@@ -200,7 +207,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2026, YALab.</p>
+    <p>&#169; Copyright 2026, Gal Kepler.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
