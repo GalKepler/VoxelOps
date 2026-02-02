@@ -101,6 +101,10 @@ def run_qsirecon(
 
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
         cmd.extend(["-v", f"{config.fs_subjects_dir}:/subjects:ro"])
+    
+    if inputs.datasets:
+        for name, path in inputs.datasets.items():
+            cmd.extend(["-v", f"{path}:/datasets/{name}:ro"])
 
     # Container image
     cmd.append(config.docker_image)
@@ -122,10 +126,17 @@ def run_qsirecon(
         ]
     )
 
+    # Datasets
+    if inputs.datasets:
+        cmd.extend(["--datasets"])
+        for name in inputs.datasets.keys():
+            addition = f"{name}=/datasets/{name}"
+            cmd.extend([addition])
     # Atlases
     if config.atlases:
         cmd.extend(["--atlases", *config.atlases])
-
+    if inputs.atlases:
+        cmd.extend([*inputs.atlases])
     # Optional arguments
     if inputs.recon_spec and inputs.recon_spec.exists():
         cmd.extend(["--recon-spec", "/recon_spec.yaml"])

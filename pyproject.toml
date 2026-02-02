@@ -28,7 +28,9 @@ classifiers = [
 # Minimal dependencies - no heavy frameworks!
 dependencies = [
     "ipython>=8.12.3",
+    "pandas>=2.0.3",
     "pyyaml>=6.0.3",
+    "templateflow>=24.2.2",
 ]
 
 [project.optional-dependencies]

@@ -1,9 +1,9 @@
 """QSIParc schemas: inputs, outputs, and defaults."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional, List
-
+from typing import Optional
+from parcellate.interfaces.models import AtlasDefinition
 
 @dataclass
 class QSIParcInputs:
@@ -12,12 +12,17 @@ class QSIParcInputs:
     Attributes:
         qsirecon_dir: QSIRecon output directory
         participant: Participant label (without 'sub-' prefix)
-        output_dir: Output directory (optional, defaults to qsirecon_dir/../qsiparc)
+        output_dir: Output directory (optional, defaults to qsirecon_dir parent)
+        session: Session label (optional, without 'ses-' prefix)
     """
 
     qsirecon_dir: Path
     participant: str
     output_dir: Optional[Path] = None
+    session: Optional[str] = None
+    atlases: Optional[list[AtlasDefinition]] = None
+    n_jobs: Optional[int] = None
+    n_procs: Optional[int] = None
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -31,14 +36,10 @@ class QSIParcOutputs:
     """Expected outputs from QSIParc.
 
     Attributes:
-        qsiparc_dir: QSIParc output directory
-        participant_dir: Participant-specific directory
-        connectivity_dir: Connectivity matrices directory
+        output_dir: Parcellation output directory
     """
 
-    qsiparc_dir: Path
-    participant_dir: Path
-    connectivity_dir: Path
+    output_dir: Path
 
     @classmethod
     def from_inputs(cls, inputs: QSIParcInputs, output_dir: Path):
@@ -51,14 +52,7 @@ class QSIParcOutputs:
         Returns:
             QSIParcOutputs with expected paths
         """
-        qsiparc_dir = output_dir / "qsiparc"
-        participant_dir = qsiparc_dir / f"sub-{inputs.participant}"
-
-        return cls(
-            qsiparc_dir=qsiparc_dir,
-            participant_dir=participant_dir,
-            connectivity_dir=participant_dir / "connectivity",
-        )
+        return cls(output_dir=output_dir)
 
 
 @dataclass
@@ -66,9 +60,17 @@ class QSIParcDefaults:
     """Default configuration for QSIParc (brain bank standards).
 
     Attributes:
-        atlases: List of atlases for parcellation
-        docker_image: Docker image to use
+        mask: Mask to apply during parcellation ("gm", "wm", "brain", or path)
+        force: Whether to overwrite existing outputs
+        background_label: Label value for background voxels
+        resampling_target: Resampling strategy ("data", "labels", "atlas", or None)
+        log_level: Logging verbosity (e.g., "INFO", "DEBUG")
     """
 
-    atlases: List[str] = field(default_factory=lambda: ["schaefer100", "schaefer200"])
-    docker_image: str = "pennlinc/qsiparc:latest"
+    mask: Optional[str] = "gm"
+    force: bool = False
+    background_label: int = 0
+    resampling_target: Optional[str] = "data"
+    log_level: str = "INFO"
+    n_jobs: Optional[int] = 1
+    n_procs: Optional[int] = 1

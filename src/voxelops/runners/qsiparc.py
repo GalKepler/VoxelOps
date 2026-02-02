@@ -1,10 +1,11 @@
 """QSIParc parcellation runner using parcellate package."""
 
+import logging
+from datetime import datetime
 from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Dict, List, Optional, Any
 
 from voxelops.runners._base import (
-    run_docker,
     validate_input_dir,
     validate_participant,
 )
@@ -13,12 +14,18 @@ from voxelops.schemas.qsiparc import (
     QSIParcOutputs,
     QSIParcDefaults,
 )
+from voxelops.exceptions import ProcedureExecutionError
+from parcellate.interfaces.qsirecon.models import QSIReconConfig
+from parcellate.interfaces.qsirecon.qsirecon import run_parcellations
 
 
 def run_qsiparc(
     inputs: QSIParcInputs, config: Optional[QSIParcDefaults] = None, **overrides
 ) -> Dict[str, Any]:
     """Run parcellation on QSIRecon outputs using parcellate.
+
+    Atlases are auto-discovered from the QSIRecon derivatives directory
+    (BIDS dseg files). No manual atlas list is needed.
 
     Args:
         inputs: Required inputs (qsirecon_dir, participant, etc.)
@@ -29,12 +36,10 @@ def run_qsiparc(
         Execution record with:
             - tool: "qsiparc"
             - participant: Participant label
-            - command: Full Docker command executed
-            - exit_code: Process exit code
             - start_time, end_time: ISO format timestamps
             - duration_seconds, duration_human: Execution duration
             - success: Boolean success status
-            - log_file: Path to JSON log
+            - output_files: List of output TSV paths
             - inputs: QSIParcInputs instance
             - config: QSIParcDefaults instance
             - expected_outputs: QSIParcOutputs instance
@@ -49,8 +54,9 @@ def run_qsiparc(
         ...     participant="01",
         ... )
         >>> result = run_qsiparc(inputs)
-        >>> print(result['expected_outputs'].connectivity_dir)
+        >>> print(result['output_files'])
     """
+
     # Use brain bank defaults if config not provided
     config = config or QSIParcDefaults()
 
@@ -70,37 +76,65 @@ def run_qsiparc(
     # Generate expected outputs
     expected_outputs = QSIParcOutputs.from_inputs(inputs, output_dir)
 
-    # Build Docker command
-    cmd = [
-        "docker",
-        "run",
-        "--rm",
-        "-v",
-        f"{inputs.qsirecon_dir}:/input:ro",
-        "-v",
-        f"{output_dir}:/output",
-        config.docker_image,
-        "/input",
-        "/output",
-        f"--participant-label={inputs.participant}",
-    ]
-
-    # Atlases
-    for atlas in config.atlases:
-        cmd.extend(["--atlas", atlas])
-
-    # Execute
-    log_dir = output_dir.parent / "logs"
-    result = run_docker(
-        cmd=cmd,
-        tool_name="qsiparc",
-        participant=inputs.participant,
-        log_dir=log_dir,
+    # Build parcellate config
+    log_level = getattr(logging, config.log_level.upper(), logging.INFO)
+    parcellate_config = QSIReconConfig(
+        input_root=inputs.qsirecon_dir,
+        output_dir=output_dir,
+        subjects=[inputs.participant],
+        sessions=[inputs.session] if inputs.session else None,
+        mask=config.mask,
+        background_label=config.background_label,
+        resampling_target=config.resampling_target,
+        force=config.force,
+        log_level=log_level,
+        atlases=inputs.atlases or [],
+        n_jobs=inputs.n_jobs or config.n_jobs,
+        n_procs=inputs.n_procs or config.n_procs,
     )
 
-    # Add inputs, config, and expected outputs to result
-    result["inputs"] = inputs
-    result["config"] = config
-    result["expected_outputs"] = expected_outputs
+    print(f"\n{'='*80}")
+    print(f"Running qsiparc for participant {inputs.participant}")
+    print(f"{'='*80}")
+    print(f"Input: {inputs.qsirecon_dir}")
+    print(f"Output: {output_dir}")
+    print(f"{'='*80}\n")
 
-    return result
+    start_time = datetime.now()
+
+    try:
+        output_files = run_parcellations(parcellate_config)
+
+        end_time = datetime.now()
+        duration = end_time - start_time
+
+        record = {
+            "tool": "qsiparc",
+            "participant": inputs.participant,
+            "start_time": start_time.isoformat(),
+            "end_time": end_time.isoformat(),
+            "duration_seconds": duration.total_seconds(),
+            "duration_human": str(duration),
+            "success": True,
+            "output_files": output_files,
+            "inputs": inputs,
+            "config": config,
+            "expected_outputs": expected_outputs,
+        }
+
+        print(f"\n{'='*80}")
+        print(f"qsiparc completed successfully")
+        print(f"Duration: {duration}")
+        print(f"Output files: {len(output_files)}")
+        print(f"{'='*80}\n")
+
+        return record
+
+    except Exception as e:
+        if isinstance(e, ProcedureExecutionError):
+            raise
+        raise ProcedureExecutionError(
+            procedure_name="qsiparc",
+            message=str(e),
+            original_error=e,
+        )

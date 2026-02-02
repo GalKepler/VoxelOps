@@ -21,6 +21,9 @@ class QSIReconInputs:
     output_dir: Optional[Path] = None
     work_dir: Optional[Path] = None
     recon_spec: Optional[Path] = None
+    datasets: Optional[dict[str, Path]] = None
+    atlases: Optional[List[str]] = None
+
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -31,6 +34,9 @@ class QSIReconInputs:
             self.work_dir = Path(self.work_dir)
         if self.recon_spec:
             self.recon_spec = Path(self.recon_spec)
+        if self.datasets:
+            self.datasets = {k: Path(v) for k, v in self.datasets.items()}
+        
 
 
 @dataclass
