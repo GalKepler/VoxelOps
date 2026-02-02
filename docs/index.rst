@@ -15,6 +15,7 @@ This documentation aims to provide a comprehensive guide to using VoxelOps, from
    :caption: Contents:
 
    getting_started
+   workflows
    source/modules
    tutorials
    
