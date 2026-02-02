@@ -50,6 +50,10 @@ config = [
     "tomli>=2.0; python_version<'3.11'",
     "pyyaml>=6.0",
 ]
+docs = [
+    "sphinx>=7.0",
+    "sphinx_rtd_theme>=2.0",
+]
 
 [dependency-groups]
 dev = [
