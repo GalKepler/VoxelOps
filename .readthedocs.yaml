@@ -13,4 +13,6 @@ sphinx:
   html_dir: _build/html
   
 formats:
-  - all
+  - htmlzip
+  - pdf
+  - epub
