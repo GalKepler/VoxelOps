@@ -15,12 +15,17 @@ from voxelops.exceptions import (
 def validate_input_dir(input_dir: Path, dir_type: str = "Input") -> None:
     """Validate that an input directory exists.
 
-    Args:
-        input_dir: Directory to validate
-        dir_type: Type of directory for error message
+    Parameters
+    ----------
+    input_dir : Path
+        Directory to validate.
+    dir_type : str, optional
+        Type of directory for error message, by default "Input".
 
-    Raises:
-        InputValidationError: If directory doesn't exist
+    Raises
+    ------
+    InputValidationError
+        If directory doesn't exist.
     """
     if not input_dir.exists():
         raise InputValidationError(f"{dir_type} directory not found: {input_dir}")
@@ -34,13 +39,19 @@ def validate_participant(
 ) -> None:
     """Validate that a participant exists in the input directory.
 
-    Args:
-        input_dir: Directory containing participant data
-        participant: Participant label (without prefix)
-        prefix: Expected prefix (default: "sub-")
+    Parameters
+    ----------
+    input_dir : Path
+        Directory containing participant data.
+    participant : str
+        Participant label (without prefix).
+    prefix : str, optional
+        Expected prefix, by default "sub-".
 
-    Raises:
-        InputValidationError: If participant not found
+    Raises
+    ------
+    InputValidationError
+        If participant not found.
     """
     participant_dir = input_dir / f"{prefix}{participant}"
     if not participant_dir.exists():
@@ -58,15 +69,23 @@ def run_docker(
 ) -> Dict[str, Any]:
     """Execute Docker command and return execution record.
 
-    Args:
-        cmd: Docker command as list of strings
-        tool_name: Name of the tool being run (for logging)
-        participant: Participant label
-        log_dir: Directory to save execution log JSON
-        capture_output: Whether to capture stdout/stderr
+    Parameters
+    ----------
+    cmd : List[str]
+        Docker command as list of strings.
+    tool_name : str
+        Name of the tool being run (for logging).
+    participant : str
+        Participant label.
+    log_dir : Optional[Path], optional
+        Directory to save execution log JSON, by default None.
+    capture_output : bool, optional
+        Whether to capture stdout/stderr, by default True.
 
-    Returns:
-        Dict with execution details:
+    Returns
+    -------
+    Dict[str, Any]
+        A dictionary with execution details:
             - tool: Tool name
             - participant: Participant label
             - command: Full command that was executed
@@ -81,8 +100,10 @@ def run_docker(
             - stderr: Process stderr (if captured)
             - error: Error message (if failed)
 
-    Raises:
-        ProcedureExecutionError: If command fails
+    Raises
+    ------
+    ProcedureExecutionError
+        If command fails.
     """
     # Setup logging
     if log_dir:

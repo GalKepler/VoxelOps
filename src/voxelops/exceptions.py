@@ -21,9 +21,14 @@ class YALabProcedureError(Exception):
 class ProcedureExecutionError(YALabProcedureError):
     """Raised when a procedure fails during execution.
 
-    Attributes:
-        procedure_name: Name of the procedure that failed.
-        original_error: The underlying exception that caused the failure, if any.
+    Parameters
+    ----------
+    procedure_name : str
+        Name of the procedure that failed.
+    message : str
+        The error message.
+    original_error : Optional[Exception], optional
+        The underlying exception that caused the failure, if any, by default None.
     """
 
     def __init__(
@@ -70,10 +75,16 @@ class OutputCollectionError(YALabProcedureError):
 class DockerExecutionError(ProcedureExecutionError):
     """Raised when a Docker-based procedure fails.
 
-    Attributes:
-        container: The Docker image/container that was running.
-        exit_code: The exit code returned by the Docker container.
-        stderr: Standard error output from the container.
+    Parameters
+    ----------
+    procedure_name : str
+        Name of the procedure that failed.
+    container : str
+        The Docker image/container that was running.
+    exit_code : int
+        The exit code returned by the Docker container.
+    stderr : str
+        Standard error output from the container.
     """
 
     def __init__(
@@ -117,6 +128,8 @@ class BIDSValidationError(YALabProcedureError):
     requirements for the procedure.
     """
 
+
+
     pass
 
 
@@ -125,6 +138,13 @@ class DependencyError(YALabProcedureError):
 
     This includes missing Docker, missing command-line tools, or
     unavailable Python packages.
+    
+    Parameters
+    ----------
+    dependency : str
+        The name of the missing dependency.
+    message : Optional[str], optional
+        The error message, by default None.
     """
 
     def __init__(self, dependency: str, message: Optional[str] = None):

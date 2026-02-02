@@ -21,12 +21,18 @@ def run_qsirecon(
 ) -> Dict[str, Any]:
     """Run QSIRecon diffusion reconstruction and connectivity.
 
-    Args:
-        inputs: Required inputs (qsiprep_dir, participant, etc.)
-        config: Configuration (uses brain bank defaults if not provided)
-        **overrides: Override any config parameter
+    Parameters
+    ----------
+    inputs : QSIReconInputs
+        Required inputs (qsiprep_dir, participant, etc.).
+    config : Optional[QSIReconDefaults], optional
+        Configuration (uses brain bank defaults if not provided), by default None.
+    **overrides
+        Override any config parameter.
 
-    Returns:
+    Returns
+    -------
+    Dict[str, Any]
         Execution record with:
             - tool: "qsirecon"
             - participant: Participant label
@@ -40,17 +46,21 @@ def run_qsirecon(
             - config: QSIReconDefaults instance
             - expected_outputs: QSIReconOutputs instance
 
-    Raises:
-        InputValidationError: If inputs are invalid
-        ProcedureExecutionError: If reconstruction fails
+    Raises
+    ------
+    InputValidationError
+        If inputs are invalid.
+    ProcedureExecutionError
+        If reconstruction fails.
 
-    Example:
-        >>> inputs = QSIReconInputs(
-        ...     qsiprep_dir=Path("/data/derivatives/qsiprep"),
-        ...     participant="01",
-        ... )
-        >>> result = run_qsirecon(inputs, atlases=["schaefer100"])
-        >>> print(result['expected_outputs'].qsirecon_dir)
+    Examples
+    --------
+    >>> inputs = QSIReconInputs(
+    ...     qsiprep_dir=Path("/data/derivatives/qsiprep"),
+    ...     participant="01",
+    ... )
+    >>> result = run_qsirecon(inputs, atlases=["schaefer100"])
+    >>> print(result['expected_outputs'].qsirecon_dir)
     """
     # Use brain bank defaults if config not provided
     config = config or QSIReconDefaults()

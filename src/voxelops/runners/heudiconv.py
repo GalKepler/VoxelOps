@@ -19,12 +19,18 @@ def run_heudiconv(
 ) -> Dict[str, Any]:
     """Convert DICOM to BIDS using HeudiConv.
 
-    Args:
-        inputs: Required inputs (dicom_dir, participant, etc.)
-        config: Configuration (uses defaults if not provided)
-        **overrides: Override any config parameter
+    Parameters
+    ----------
+    inputs : HeudiconvInputs
+        Required inputs (dicom_dir, participant, etc.).
+    config : Optional[HeudiconvDefaults], optional
+        Configuration (uses defaults if not provided), by default None.
+    **overrides
+        Override any config parameter.
 
-    Returns:
+    Returns
+    -------
+    Dict[str, Any]
         Execution record with:
             - tool: "heudiconv"
             - participant: Participant label
@@ -38,21 +44,25 @@ def run_heudiconv(
             - config: HeudiconvDefaults instance
             - expected_outputs: HeudiconvOutputs instance
 
-    Raises:
-        InputValidationError: If inputs are invalid
-        ProcedureExecutionError: If conversion fails
+    Raises
+    ------
+    InputValidationError
+        If inputs are invalid.
+    ProcedureExecutionError
+        If conversion fails.
 
-    Example:
-        >>> inputs = HeudiconvInputs(
-        ...     dicom_dir=Path("/data/dicoms"),
-        ...     participant="01",
-        ... )
-        >>> config = HeudiconvDefaults(
-        ...     heuristic=Path("/code/heuristic.py"),
-        ... )
-        >>> result = run_heudiconv(inputs, config)
-        >>> print(result['expected_outputs'].bids_dir)
-        PosixPath('/data/bids')
+    Examples
+    --------
+    >>> inputs = HeudiconvInputs(
+    ...     dicom_dir=Path("/data/dicoms"),
+    ...     participant="01",
+    ... )
+    >>> config = HeudiconvDefaults(
+    ...     heuristic=Path("/code/heuristic.py"),
+    ... )
+    >>> result = run_heudiconv(inputs, config)
+    >>> print(result['expected_outputs'].bids_dir)
+    PosixPath('/data/bids')
     """
     # Use defaults if config not provided
     config = config or HeudiconvDefaults()
