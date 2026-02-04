@@ -1,4 +1,45 @@
-"""Common validation rules used across multiple procedures."""
+"""Common validation rules used across multiple procedures.
+
+This module provides reusable validation rules that can be used across
+different neuroimaging procedures. Each rule is designed to be composable,
+allowing validators to mix and match rules as needed.
+
+Available Rules
+---------------
+- DirectoryExistsRule: Check that an input directory exists
+- FileExistsRule: Check that an input or config file exists
+- ParticipantExistsRule: Check that participant directory exists in input
+- OutputDirectoryExistsRule: Post-validation check for output directory
+- GlobFilesExistRule: Check that files matching a pattern exist
+- ExpectedOutputsExistRule: Generic post-validation for various output structures
+
+Examples
+--------
+Pre-validation example:
+
+>>> from voxelops.validation.rules.common import DirectoryExistsRule
+>>> from voxelops.validation.context import ValidationContext
+>>>
+>>> rule = DirectoryExistsRule("bids_dir", "BIDS directory")
+>>> context = ValidationContext(
+...     procedure_name="qsiprep",
+...     participant="01",
+...     inputs=inputs,
+... )
+>>> result = rule.check(context)
+>>> print(result.passed)
+
+Post-validation example:
+
+>>> from voxelops.validation.rules.common import ExpectedOutputsExistRule
+>>>
+>>> rule = ExpectedOutputsExistRule(
+...     outputs_attr="html_report",
+...     item_type="HTML report",
+... )
+>>> context.expected_outputs = expected_outputs
+>>> result = rule.check(context)
+"""
 
 from pathlib import Path
 from typing import Optional
@@ -8,7 +49,50 @@ from voxelops.validation.context import ValidationContext
 
 
 class DirectoryExistsRule(ValidationRule):
-    """Check that a directory exists."""
+    """Check that a directory exists on the inputs object.
+
+    This is typically used in pre-validation to ensure input directories
+    exist before execution begins.
+
+    Parameters
+    ----------
+    path_attr : str
+        Attribute name on inputs to check (e.g., 'bids_dir', 'dicom_dir').
+        The rule will look for this attribute on context.inputs.
+    dir_type : str, optional
+        Human-readable directory type for error messages (default: "Input").
+        Example: "BIDS directory", "QSIPrep output directory"
+    severity : {"error", "warning"}, optional
+        Validation severity level (default: "error").
+        - "error": Execution will not proceed if check fails
+        - "warning": Check failure is logged but doesn't block execution
+
+    Attributes
+    ----------
+    name : str
+        Rule name in format "{path_attr}_exists"
+    description : str
+        Human-readable description
+    phase : str
+        Always "pre" for this rule
+
+    Examples
+    --------
+    >>> # Check BIDS directory exists
+    >>> rule = DirectoryExistsRule("bids_dir", "BIDS directory")
+    >>>
+    >>> # Check with warning severity (won't block execution)
+    >>> rule = DirectoryExistsRule(
+    ...     "work_dir",
+    ...     "Working directory",
+    ...     severity="warning"
+    ... )
+
+    Notes
+    -----
+    - Returns passing result if path is None (for optional inputs)
+    - Checks both that path exists AND that it's a directory (not a file)
+    """
 
     def __init__(
         self,
@@ -16,16 +100,6 @@ class DirectoryExistsRule(ValidationRule):
         dir_type: str = "Input",
         severity: str = "error",
     ):
-        """
-        Parameters
-        ----------
-        path_attr : str
-            Attribute name on inputs to check (e.g., 'bids_dir', 'dicom_dir')
-        dir_type : str
-            Human-readable type for error messages
-        severity : str
-            "error" or "warning"
-        """
         self.path_attr = path_attr
         self.dir_type = dir_type
         self.name = f"{path_attr}_exists"
@@ -223,7 +297,89 @@ class OutputDirectoryExistsRule(ValidationRule):
 
 
 class GlobFilesExistRule(ValidationRule):
-    """Check that files matching a glob pattern exist."""
+    """Check that files matching a glob pattern exist.
+
+    This flexible rule can be used for both pre- and post-validation to verify
+    that required files exist. It supports both BIDS-structured participant-level
+    searches and flat directory searches.
+
+    Parameters
+    ----------
+    base_dir_attr : str
+        Attribute name for the base directory to search in.
+        For pre-validation: usually "bids_dir", "qsiprep_dir", etc. from inputs
+        For post-validation: usually "output_dir", "participant_dir" from expected_outputs
+    pattern : str
+        Glob pattern to match files (e.g., "**/dwi/*.nii.gz", "**/*.html").
+        Patterns are relative to the search directory.
+    min_count : int, optional
+        Minimum number of files required (default: 1).
+        Set to 0 to allow zero matches.
+    file_type : str, optional
+        Human-readable file type for error messages (default: "Files").
+        Example: "DWI images", "HTML reports"
+    severity : {"error", "warning"}, optional
+        Validation severity level (default: "error").
+    phase : {"pre", "post"}, optional
+        Validation phase (default: "pre").
+    participant_level : bool, optional
+        Whether to search in participant-specific subdirectory (default: True).
+
+        - True: Searches in base_dir/sub-{participant}/ses-{session}/ (or without ses- if no session)
+          Use for pre-validation of BIDS-structured inputs
+        - False: Searches directly in base_dir
+          Use for post-validation when base_dir is already participant-specific
+
+    Attributes
+    ----------
+    name : str
+        Rule name derived from file_type
+    description : str
+        Description including the glob pattern
+
+    Examples
+    --------
+    Pre-validation for BIDS inputs (participant_level=True):
+
+    >>> # Check for DWI files in BIDS structure
+    >>> rule = GlobFilesExistRule(
+    ...     base_dir_attr="bids_dir",
+    ...     pattern="**/dwi/*_dwi.nii.gz",
+    ...     min_count=1,
+    ...     file_type="DWI images",
+    ...     participant_level=True,  # Searches in bids_dir/sub-01/
+    ... )
+
+    Post-validation for outputs (participant_level=False):
+
+    >>> # Check for output files (output_dir is already participant-specific)
+    >>> rule = GlobFilesExistRule(
+    ...     base_dir_attr="output_dir",
+    ...     pattern="**/*.nii.gz",
+    ...     min_count=1,
+    ...     file_type="Output images",
+    ...     phase="post",
+    ...     participant_level=False,  # output_dir is already sub-01/
+    ... )
+
+    QSIRecon derivative structure (participant_level=False):
+
+    >>> # Check QSIRecon derivative outputs
+    >>> rule = GlobFilesExistRule(
+    ...     base_dir_attr="qsirecon_dir",
+    ...     pattern="derivatives/qsirecon-*/**/dwi/*.nii.gz",
+    ...     min_count=1,
+    ...     file_type="Reconstruction outputs",
+    ...     participant_level=False,  # Pattern includes full path structure
+    ... )
+
+    Notes
+    -----
+    - For participant_level=True, the participant directory must exist (fails if missing)
+    - For participant_level=False, searches directly in base_dir (no participant filtering)
+    - Found files are reported as names only (not full paths) for cleaner output
+    - Session support: automatically includes session in path when context.session is set
+    """
 
     def __init__(
         self,
@@ -323,14 +479,93 @@ class GlobFilesExistRule(ValidationRule):
 
 
 class ExpectedOutputsExistRule(ValidationRule):
-    """Generic rule to check if expected outputs exist.
+    """Generic post-validation rule to check if expected outputs exist.
 
-    This is a flexible base class that can validate various output structures:
-    - Single file (e.g., HTML report)
-    - Dictionary of files (e.g., {session: path})
-    - Nested dictionary (e.g., {workflow: {session: path}})
+    This flexible rule can validate various output structures, automatically
+    adapting to the type of output (single file, flat dictionary, or nested
+    dictionary). This eliminates the need for separate rules for different
+    output patterns.
 
-    Reduces code duplication across validators.
+    Supported Output Structures
+    ----------------------------
+    1. **Single Path**: A single file or directory
+       Example: ``html_report: Path("/out/sub-01.html")``
+
+    2. **Flat Dictionary**: Simple mapping of keys to paths
+       Example: ``session_outputs: {"baseline": Path("/out/baseline.txt")}``
+
+    3. **Nested Dictionary**: Two-level mapping (e.g., workflow × session)
+       Example: ``workflow_reports: {"mrtrix": {"01": Path("/out/01.html")}}``
+
+    Parameters
+    ----------
+    outputs_attr : str
+        Attribute name on expected_outputs to check.
+        Examples: 'html_report', 'workflow_reports', 'workflow_dirs'
+    item_type : str
+        Human-readable description for error messages.
+        Examples: 'HTML report', 'workflow reports', 'workflow directories'
+    severity : {"error", "warning"}, optional
+        Validation severity level (default: "error").
+    flatten_nested : bool, optional
+        Whether to expect nested dictionary structure (default: False).
+
+        - False: Expects single Path or flat dict {key: path}
+        - True: Expects nested dict {key1: {key2: path}}
+
+    Attributes
+    ----------
+    name : str
+        Rule name in format "{outputs_attr}_exist"
+    description : str
+        Description of what's being checked
+    phase : str
+        Always "post" for this rule
+
+    Examples
+    --------
+    Single file output:
+
+    >>> # QSIPrep HTML report
+    >>> rule = ExpectedOutputsExistRule(
+    ...     outputs_attr="html_report",
+    ...     item_type="HTML report",
+    ... )
+    >>> # Expects: expected_outputs.html_report = Path("/out/sub-01.html")
+
+    Flat dictionary (session outputs):
+
+    >>> # Session-specific outputs
+    >>> rule = ExpectedOutputsExistRule(
+    ...     outputs_attr="session_outputs",
+    ...     item_type="session outputs",
+    ...     flatten_nested=False,
+    ... )
+    >>> # Expects: expected_outputs.session_outputs = {
+    >>> #     "baseline": Path("/out/baseline.nii.gz"),
+    >>> #     "followup": Path("/out/followup.nii.gz"),
+    >>> # }
+
+    Nested dictionary (workflow × session):
+
+    >>> # QSIRecon workflow reports
+    >>> rule = ExpectedOutputsExistRule(
+    ...     outputs_attr="workflow_reports",
+    ...     item_type="workflow HTML reports",
+    ...     flatten_nested=True,
+    ... )
+    >>> # Expects: expected_outputs.workflow_reports = {
+    >>> #     "mrtrix": {"01": Path("/out/mrtrix/sub-01_ses-01.html")},
+    >>> #     "dipy": {"01": Path("/out/dipy/sub-01_ses-01.html")},
+    >>> # }
+
+    Notes
+    -----
+    - Automatically detects the output structure type
+    - For nested dicts, reports missing items as "workflow/session"
+    - Missing files are reported with their expected paths
+    - Found files are summarized by count for brevity
+    - This rule replaces many specialized output-checking rules
     """
 
     def __init__(
@@ -340,22 +575,6 @@ class ExpectedOutputsExistRule(ValidationRule):
         severity: str = "error",
         flatten_nested: bool = False,
     ):
-        """Initialize the rule.
-
-        Parameters
-        ----------
-        outputs_attr : str
-            Attribute name on expected_outputs to check (e.g., 'html_report',
-            'workflow_reports', 'workflow_dirs')
-        item_type : str
-            Human-readable description of what's being checked
-            (e.g., 'HTML report', 'workflow reports', 'workflow directories')
-        severity : str
-            'error' or 'warning'
-        flatten_nested : bool
-            If True, expect nested dict structure {key1: {key2: path}}.
-            If False, expect flat dict {key: path} or single Path.
-        """
         self.outputs_attr = outputs_attr
         self.item_type = item_type
         self.flatten_nested = flatten_nested

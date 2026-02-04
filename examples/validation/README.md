@@ -2,6 +2,12 @@
 
 This directory contains comprehensive examples for using the VoxelOps validation framework.
 
+## 📚 Full Documentation
+
+For detailed documentation on the validation framework, see:
+- **[Validation Framework Guide](../../docs/validation.rst)** - Complete guide with API reference
+- **[Contributing Guide](../../docs/contributing.rst)** - Adding validation to new procedures
+
 ## Getting Started
 
 Start with these notebooks in order:
@@ -91,7 +97,69 @@ else:
 
 **Post-validation:**
 - Output directory created
-- Parcellated CSV files exist
+- Workflow directories created
+- Parcellated TSV files exist
+
+## Available Validation Rules
+
+VoxelOps provides reusable validation rules in `voxelops.validation.rules.common`:
+
+| Rule | Phase | Purpose | Example Usage |
+|------|-------|---------|---------------|
+| `DirectoryExistsRule` | Pre | Check directory exists | BIDS directory, QSIPrep output |
+| `FileExistsRule` | Pre | Check file exists | Heuristic file, FreeSurfer license |
+| `ParticipantExistsRule` | Pre | Check participant in input | sub-01 exists in BIDS |
+| `GlobFilesExistRule` | Both | Check files match pattern | DWI files, output NIfTIs |
+| `OutputDirectoryExistsRule` | Post | Check output created | QSIPrep output directory |
+| `ExpectedOutputsExistRule` | Post | Check expected outputs | HTML reports, workflow outputs |
+
+### ExpectedOutputsExistRule
+
+The `ExpectedOutputsExistRule` is a powerful generic rule that handles various output structures:
+
+```python
+from voxelops.validation.rules.common import ExpectedOutputsExistRule
+
+# Single file (e.g., HTML report)
+ExpectedOutputsExistRule(
+    outputs_attr="html_report",
+    item_type="HTML report",
+)
+
+# Flat dictionary {session: path}
+ExpectedOutputsExistRule(
+    outputs_attr="session_outputs",
+    item_type="session outputs",
+)
+
+# Nested dictionary {workflow: {session: path}}
+ExpectedOutputsExistRule(
+    outputs_attr="workflow_reports",
+    item_type="workflow HTML reports",
+    flatten_nested=True,
+)
+```
+
+### GlobFilesExistRule participant_level
+
+The `participant_level` parameter controls search behavior:
+
+```python
+# Pre-validation: Search in participant subdirectory
+GlobFilesExistRule(
+    base_dir_attr="bids_dir",
+    pattern="**/dwi/*.nii.gz",
+    participant_level=True,  # Searches in bids_dir/sub-{participant}/
+)
+
+# Post-validation: Search in already participant-specific directory
+GlobFilesExistRule(
+    base_dir_attr="output_dir",
+    pattern="**/*.nii.gz",
+    phase="post",
+    participant_level=False,  # output_dir is already sub-{participant}/
+)
+```
 
 ## Common Patterns
 
