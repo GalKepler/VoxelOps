@@ -52,6 +52,7 @@ class QSIPrepValidator(Validator):
             pattern="**/dwi/*_dwi.nii.gz",
             min_count=1,
             file_type="DWI files",
+            participant_level=True,
         ),
         # Check for bval/bvec files
         GlobFilesExistRule(
@@ -59,12 +60,14 @@ class QSIPrepValidator(Validator):
             pattern="**/dwi/*_dwi.bval",
             min_count=1,
             file_type="b-value files",
+            participant_level=True,
         ),
         GlobFilesExistRule(
             base_dir_attr="bids_dir",
             pattern="**/dwi/*_dwi.bvec",
             min_count=1,
             file_type="b-vector files",
+            participant_level=True,
         ),
         # Anatomical reference
         GlobFilesExistRule(
@@ -72,6 +75,7 @@ class QSIPrepValidator(Validator):
             pattern="**/anat/*_T1w.nii.gz",
             min_count=1,
             file_type="T1w anatomical",
+            participant_level=True,
         ),
     ]
 

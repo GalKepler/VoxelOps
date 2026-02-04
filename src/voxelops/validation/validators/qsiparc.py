@@ -61,12 +61,15 @@ class QSIParcValidator(Validator):
         # Directory checks - QSIParc takes QSIRecon output as input
         DirectoryExistsRule("qsirecon_dir", "QSIRecon directory"),
         ParticipantExistsRule(),
-        # Check for required input files from QSIRecon
+        # Check for required reconstruction outputs from QSIRecon workflows
+        # Note: QSIRecon nests participant under workflow dirs (derivatives/qsirecon-*/sub-*)
+        # so we check from qsirecon_dir root, not participant-scoped
         GlobFilesExistRule(
             base_dir_attr="qsirecon_dir",
-            pattern="**/*.nii.gz",
+            pattern="derivatives/qsirecon-*/**/dwi/*.nii.gz",
             min_count=1,
-            file_type="Reconstruction files",
+            file_type="Reconstruction outputs for parcellation",
+            participant_level=False,
         ),
     ]
 
