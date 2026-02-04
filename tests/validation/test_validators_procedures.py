@@ -122,9 +122,40 @@ class TestQSIPrepValidator:
         assert len(validator.pre_rules) == 6
         assert len(validator.post_rules) == 2
 
-    def test_pre_validation_success(self, tmp_path):
-        """Test successful pre-validation."""
-        # Setup test environment
+    def test_pre_validation_success_with_sessions(self, tmp_path):
+        """Test successful pre-validation with session-based BIDS dataset."""
+        # Setup test environment with sessions
+        bids_dir = tmp_path / "bids"
+        sub_dir = bids_dir / "sub-01"
+        ses_dir = sub_dir / "ses-01"
+        dwi_dir = ses_dir / "dwi"
+        anat_dir = ses_dir / "anat"
+        dwi_dir.mkdir(parents=True)
+        anat_dir.mkdir(parents=True)
+
+        # Create required files
+        (dwi_dir / "sub-01_ses-01_dwi.nii.gz").touch()
+        (dwi_dir / "sub-01_ses-01_dwi.bval").touch()
+        (dwi_dir / "sub-01_ses-01_dwi.bvec").touch()
+        (anat_dir / "sub-01_ses-01_T1w.nii.gz").touch()
+
+        validator = QSIPrepValidator()
+        context = ValidationContext(
+            procedure_name="qsiprep",
+            participant="01",
+            session="01",
+            inputs=MockInputs(bids_dir=bids_dir),
+        )
+
+        report = validator.validate_pre(context)
+
+        assert report.procedure == "qsiprep"
+        assert report.passed is True
+        assert len(report.results) == 6
+
+    def test_pre_validation_success_without_sessions(self, tmp_path):
+        """Test successful pre-validation with non-session BIDS dataset."""
+        # Setup test environment without sessions
         bids_dir = tmp_path / "bids"
         sub_dir = bids_dir / "sub-01"
         dwi_dir = sub_dir / "dwi"

@@ -18,30 +18,30 @@ class QSIPrepValidator(Validator):
         # Directory checks
         DirectoryExistsRule("bids_dir", "BIDS directory"),
         ParticipantExistsRule(),
-        # DWI data checks
+        # DWI data checks - using **/ to handle both session and non-session datasets
         GlobFilesExistRule(
             base_dir_attr="bids_dir",
-            pattern="dwi/*_dwi.nii.gz",
+            pattern="**/dwi/*_dwi.nii.gz",
             min_count=1,
             file_type="DWI files",
         ),
         # Check for bval/bvec files
         GlobFilesExistRule(
             base_dir_attr="bids_dir",
-            pattern="dwi/*_dwi.bval",
+            pattern="**/dwi/*_dwi.bval",
             min_count=1,
             file_type="b-value files",
         ),
         GlobFilesExistRule(
             base_dir_attr="bids_dir",
-            pattern="dwi/*_dwi.bvec",
+            pattern="**/dwi/*_dwi.bvec",
             min_count=1,
             file_type="b-vector files",
         ),
         # Anatomical reference
         GlobFilesExistRule(
             base_dir_attr="bids_dir",
-            pattern="anat/*_T1w.nii.gz",
+            pattern="**/anat/*_T1w.nii.gz",
             min_count=1,
             file_type="T1w anatomical",
         ),
