@@ -3,7 +3,6 @@
 from unittest.mock import patch
 
 import pytest
-
 from voxelops.exceptions import InputValidationError
 from voxelops.runners.qsirecon import run_qsirecon
 from voxelops.schemas.qsirecon import QSIReconDefaults, QSIReconInputs
@@ -77,8 +76,9 @@ class TestDirectoryDefaults:
     def test_default_output_dir(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
         inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
         result = run_qsirecon(inputs)
-        # default: qsiprep_dir.parent
-        expected = mock_qsiprep_dir.parent / "qsirecon"
+        # qsirecon_dir is now the output_dir directly (not output_dir / "qsirecon")
+        # default output_dir: qsiprep_dir.parent (typically "derivatives")
+        expected = mock_qsiprep_dir.parent
         assert result["expected_outputs"].qsirecon_dir == expected
 
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
@@ -101,7 +101,9 @@ class TestDockerCommand:
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
-    def test_fs_license_mount(self, _gid, _uid, mock_rd, mock_qsiprep_dir, mock_fs_license):
+    def test_fs_license_mount(
+        self, _gid, _uid, mock_rd, mock_qsiprep_dir, mock_fs_license
+    ):
         inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
         cfg = QSIReconDefaults(fs_license=mock_fs_license)
         run_qsirecon(inputs, config=cfg)
@@ -111,7 +113,9 @@ class TestDockerCommand:
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
-    def test_fs_subjects_dir_mount(self, _gid, _uid, mock_rd, mock_qsiprep_dir, tmp_path):
+    def test_fs_subjects_dir_mount(
+        self, _gid, _uid, mock_rd, mock_qsiprep_dir, tmp_path
+    ):
         fs_dir = tmp_path / "fs_subjects"
         fs_dir.mkdir()
         inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
@@ -124,7 +128,9 @@ class TestDockerCommand:
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
-    def test_datasets_volumes_and_args(self, _gid, _uid, mock_rd, mock_qsiprep_dir, tmp_path):
+    def test_datasets_volumes_and_args(
+        self, _gid, _uid, mock_rd, mock_qsiprep_dir, tmp_path
+    ):
         ds1 = tmp_path / "ds1"
         ds1.mkdir()
         inputs = QSIReconInputs(
@@ -144,9 +150,13 @@ class TestDockerCommand:
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
     def test_config_atlases(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
-        inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
-        cfg = QSIReconDefaults(atlases=["AAL116", "Gordon333Ext"])
-        run_qsirecon(inputs, config=cfg)
+        # atlases moved to QSIReconInputs
+        inputs = QSIReconInputs(
+            qsiprep_dir=mock_qsiprep_dir,
+            participant="01",
+            atlases=["AAL116", "Gordon333Ext"],
+        )
+        run_qsirecon(inputs)
         cmd = mock_rd.call_args.kwargs["cmd"]
         assert "--atlases" in cmd
         idx = cmd.index("--atlases")
@@ -162,15 +172,17 @@ class TestDockerCommand:
             participant="01",
             atlases=["custom_atlas"],
         )
-        cfg = QSIReconDefaults(atlases=[])
-        run_qsirecon(inputs, config=cfg)
+        # atlases are now on inputs, not config
+        run_qsirecon(inputs)
         cmd = mock_rd.call_args.kwargs["cmd"]
         assert "custom_atlas" in cmd
 
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
-    def test_recon_spec_mount(self, _gid, _uid, mock_rd, mock_qsiprep_dir, mock_recon_spec):
+    def test_recon_spec_mount(
+        self, _gid, _uid, mock_rd, mock_qsiprep_dir, mock_recon_spec
+    ):
         inputs = QSIReconInputs(
             qsiprep_dir=mock_qsiprep_dir,
             participant="01",
@@ -184,7 +196,9 @@ class TestDockerCommand:
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
-    def test_recon_spec_volume_always_mounted(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
+    def test_recon_spec_volume_always_mounted(
+        self, _gid, _uid, mock_rd, mock_qsiprep_dir
+    ):
         """Quirk: line 95 unconditionally mounts inputs.recon_spec even when None."""
         inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
         run_qsirecon(inputs)
@@ -216,8 +230,12 @@ class TestDockerCommand:
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
     def test_no_atlases_no_flag(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
-        inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
-        cfg = QSIReconDefaults(atlases=[])
-        run_qsirecon(inputs, config=cfg)
+        # atlases moved to inputs - pass empty list
+        inputs = QSIReconInputs(
+            qsiprep_dir=mock_qsiprep_dir,
+            participant="01",
+            atlases=[],
+        )
+        run_qsirecon(inputs)
         cmd = mock_rd.call_args.kwargs["cmd"]
         assert "--atlases" not in cmd

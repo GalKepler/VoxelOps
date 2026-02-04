@@ -29,7 +29,6 @@ def _build_qsiprep_docker_command(
     cmd = [
         "docker",
         "run",
-        "-ti",
         "--rm",
         "--user",
         f"{uid}:{gid}",
@@ -167,6 +166,26 @@ def run_qsiprep(
     # Generate expected outputs
     expected_outputs = QSIPrepOutputs.from_inputs(inputs, output_dir, work_dir)
 
+    # Check if outputs already exist and skip if not forcing
+    if expected_outputs.exist() and not config.force:
+        print("\n" + "=" * 80)
+        print(f"✓ QSIPrep outputs already exist for participant {inputs.participant}")
+        print(f"  Participant dir: {expected_outputs.participant_dir}")
+        print(f"  HTML report: {expected_outputs.html_report}")
+        print("  Use force=True to re-run")
+        print("=" * 80 + "\n")
+
+        return {
+            "tool": "qsiprep",
+            "participant": inputs.participant,
+            "skipped": True,
+            "reason": "outputs_exist",
+            "success": True,
+            "inputs": inputs,
+            "config": config,
+            "expected_outputs": expected_outputs,
+        }
+
     # Build Docker command
     cmd = _build_qsiprep_docker_command(inputs, config, output_dir, work_dir)
 
@@ -183,5 +202,6 @@ def run_qsiprep(
     result["inputs"] = inputs
     result["config"] = config
     result["expected_outputs"] = expected_outputs
+    result["skipped"] = False
 
     return result

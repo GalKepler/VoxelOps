@@ -86,7 +86,7 @@ def post_process_heudiconv_output(
     # Step 1: Verify fieldmap EPI files exist
     _run_post_processing_step(
         verify_fmap_epi_files,
-        "verification",
+        "Verification",
         results,
         participant_dir,
         session,
@@ -95,7 +95,7 @@ def post_process_heudiconv_output(
     # Step 2: Add IntendedFor to fieldmap JSONs
     _run_post_processing_step(
         add_intended_for_to_fmaps,
-        "intended_for",
+        "IntendedFor processing",
         results,
         participant_dir,
         session,
@@ -105,7 +105,7 @@ def post_process_heudiconv_output(
     # Step 3: Hide bval/bvec from fmap directories
     _run_post_processing_step(
         remove_bval_bvec_from_fmaps,
-        "cleanup",
+        "Cleanup",
         results,
         participant_dir,
         session,

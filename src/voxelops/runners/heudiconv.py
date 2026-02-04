@@ -61,8 +61,6 @@ def _build_heudiconv_docker_command(
     if config.grouping:
         cmd.extend(["--grouping", config.grouping])
 
-    if config.overwrite:
-        cmd.append("--overwrite")
     return cmd
 
 

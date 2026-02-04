@@ -17,9 +17,7 @@ class TestQSIReconInputs:
         assert isinstance(inp.qsiprep_dir, Path)
 
     def test_output_dir_converted(self):
-        inp = QSIReconInputs(
-            qsiprep_dir="/d", participant="01", output_dir="/out"
-        )
+        inp = QSIReconInputs(qsiprep_dir="/d", participant="01", output_dir="/out")
         assert isinstance(inp.output_dir, Path)
 
     def test_output_dir_none(self):
@@ -27,9 +25,7 @@ class TestQSIReconInputs:
         assert inp.output_dir is None
 
     def test_work_dir_converted(self):
-        inp = QSIReconInputs(
-            qsiprep_dir="/d", participant="01", work_dir="/w"
-        )
+        inp = QSIReconInputs(qsiprep_dir="/d", participant="01", work_dir="/w")
         assert isinstance(inp.work_dir, Path)
 
     def test_work_dir_none(self):
@@ -37,9 +33,7 @@ class TestQSIReconInputs:
         assert inp.work_dir is None
 
     def test_recon_spec_converted(self):
-        inp = QSIReconInputs(
-            qsiprep_dir="/d", participant="01", recon_spec="/r.yaml"
-        )
+        inp = QSIReconInputs(qsiprep_dir="/d", participant="01", recon_spec="/r.yaml")
         assert isinstance(inp.recon_spec, Path)
 
     def test_recon_spec_none(self):
@@ -60,14 +54,15 @@ class TestQSIReconInputs:
         assert inp.datasets is None
 
     def test_atlases_stored(self):
-        inp = QSIReconInputs(
-            qsiprep_dir="/d", participant="01", atlases=["AAL116"]
-        )
+        inp = QSIReconInputs(qsiprep_dir="/d", participant="01", atlases=["AAL116"])
         assert inp.atlases == ["AAL116"]
 
-    def test_atlases_none(self):
+    def test_atlases_default(self):
+        """Test that atlases has a default value."""
         inp = QSIReconInputs(qsiprep_dir="/d", participant="01")
-        assert inp.atlases is None
+        # atlases has a default_factory, so it's never None
+        assert len(inp.atlases) == 14
+        assert "AAL116" in inp.atlases
 
 
 # -- QSIReconOutputs ---------------------------------------------------------
@@ -75,11 +70,18 @@ class TestQSIReconInputs:
 
 class TestQSIReconOutputs:
     def test_from_inputs(self):
+        """Test that from_inputs generates expected output paths."""
         inp = QSIReconInputs(qsiprep_dir="/d", participant="01")
         out = QSIReconOutputs.from_inputs(inp, Path("/out"), Path("/work"))
-        assert out.qsirecon_dir == Path("/out/qsirecon")
-        assert out.participant_dir == Path("/out/qsirecon/sub-01")
-        assert out.html_report == Path("/out/qsirecon/sub-01.html")
+        # output_dir is now the qsirecon_dir directly (not /out/qsirecon)
+        assert out.qsirecon_dir == Path("/out")
+        assert out.participant_dir == Path("/out/sub-01")
+        # workflow_reports replaces html_report
+        assert "default" in out.workflow_reports
+        assert None in out.workflow_reports["default"]  # No session
+        assert out.workflow_reports["default"][None] == Path(
+            "/out/derivatives/qsirecon-default/sub-01.html"
+        )
         assert out.work_dir == Path("/work")
 
 
@@ -88,15 +90,15 @@ class TestQSIReconOutputs:
 
 class TestQSIReconDefaults:
     def test_default_values(self):
+        """Test default configuration values."""
         d = QSIReconDefaults()
         assert d.nprocs == 8
         assert d.mem_mb == 16000
-        assert len(d.atlases) == 14
-        assert "4S156Parcels" in d.atlases
-        assert "Gordon333Ext" in d.atlases
+        # atlases moved to QSIReconInputs
         assert d.fs_subjects_dir is None
         assert d.fs_license is None
         assert d.docker_image == "pennlinc/qsirecon:latest"
+        assert d.force is False
 
     def test_fs_subjects_dir_converted(self):
         d = QSIReconDefaults(fs_subjects_dir="/subj")

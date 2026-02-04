@@ -196,7 +196,86 @@ Finally, add tests for your new runner. Create a new file
 
 Refer to existing tests like ``tests/test_runners_qsiprep.py`` for examples.
 
-### 5. Update Documentation
+### 5. Add Validation
+
+VoxelOps includes a validation framework to ensure data quality. You should
+create a validator for your new procedure.
+
+Create ``src/voxelops/validation/validators/mytool.py``:
+
+.. code-block:: python
+
+   """MyTool validator with pre and post validation rules."""
+
+   from voxelops.validation.rules.common import (
+       DirectoryExistsRule,
+       GlobFilesExistRule,
+       OutputDirectoryExistsRule,
+       ParticipantExistsRule,
+   )
+   from voxelops.validation.validators.base import Validator
+
+
+   class MyToolValidator(Validator):
+       """Validator for MyTool procedure."""
+
+       procedure_name = "mytool"
+
+       pre_rules = [
+           # Validate inputs before execution
+           DirectoryExistsRule("bids_dir", "BIDS directory"),
+           ParticipantExistsRule(),
+           GlobFilesExistRule(
+               base_dir_attr="bids_dir",
+               pattern="**/anat/*_T1w.nii.gz",
+               min_count=1,
+               file_type="T1w images",
+               participant_level=True,  # Search in sub-{participant} subdirectory
+           ),
+       ]
+
+       post_rules = [
+           # Validate outputs after execution
+           OutputDirectoryExistsRule("output_dir", "Output directory"),
+           GlobFilesExistRule(
+               base_dir_attr="output_dir",
+               pattern="**/*.nii.gz",
+               min_count=1,
+               file_type="Output images",
+               phase="post",
+               participant_level=False,  # output_dir is already participant-specific
+           ),
+       ]
+
+Then:
+
+1. Export it in ``src/voxelops/validation/validators/__init__.py``:
+
+   .. code-block:: python
+
+      from .mytool import MyToolValidator
+
+      __all__ = [
+          ...,
+          "MyToolValidator",
+      ]
+
+2. Register it in ``src/voxelops/procedures/orchestrator.py``:
+
+   .. code-block:: python
+
+      from voxelops.validation.validators import MyToolValidator
+
+      VALIDATORS = {
+          ...,
+          "mytool": MyToolValidator(),
+      }
+
+3. Add tests in ``tests/validation/test_validators_mytool.py``
+
+See the **Validation Framework** documentation for detailed guidance.
+
+### 6. Update Documentation
 
 If you've added a new runner, add it to the list of available procedures in
 ``docs/index.rst`` and create a new ``.rst`` file for your runner in the
@@ -207,5 +286,7 @@ Final Words
 
 Once you've followed these steps, open a pull request on GitHub. We'll review
 your contribution and work with you to get it merged.
+
+For more information on validation, see :doc:`validation`.
 
 Thank you for helping us make VoxelOps better!

@@ -3,13 +3,15 @@
 import json
 import stat
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 from voxelops.utils.bids import (
     _build_intended_for_path,
     _find_dwi_targets,
     _find_func_targets,
+    _process_single_fmap_json,
     _read_json_sidecar,
+    _run_post_processing_step,
     _update_json_sidecar,
     add_intended_for_to_fmaps,
     post_process_heudiconv_output,
@@ -448,3 +450,123 @@ class TestReadJsonSidecar:
     def test_file_not_found(self, tmp_path):
         data = _read_json_sidecar(tmp_path / "nope.json")
         assert data is None
+
+
+# -- Helper Functions Tests --------------------------------------------------
+
+
+class TestBidsHelpers:
+    def test_run_post_processing_step_success(self):
+        mock_step_func = Mock(return_value={"success": True, "results": "ok"})
+        results = {"errors": [], "success": True}
+        _run_post_processing_step(mock_step_func, "test_step", results, 1, kw="a")
+        mock_step_func.assert_called_once_with(1, kw="a")
+        assert results["test_step"] == {"success": True, "results": "ok"}
+        assert results["errors"] == []
+        assert results["success"] is True
+
+    def test_run_post_processing_step_failure_from_step_func(self):
+        mock_step_func = Mock(return_value={"success": False, "errors": ["step error"]})
+        results = {"errors": [], "success": True}
+        _run_post_processing_step(mock_step_func, "test_step", results, 1, kw="a")
+        assert results["test_step"] == {"success": False, "errors": ["step error"]}
+        assert results["errors"] == ["step error"]
+        assert results["success"] is False
+
+    def test_run_post_processing_step_exception(self):
+        mock_step_func = Mock(side_effect=RuntimeError("boom"))
+        results = {"errors": [], "success": True}
+        _run_post_processing_step(mock_step_func, "test_step", results, 1, kw="a")
+        assert "Test step failed: boom" in results["errors"][0]
+        assert results["success"] is False
+
+    def test_process_single_fmap_json_dwi(self, tmp_path):
+        participant_dir = tmp_path / "sub-01"
+        fmap_dir = participant_dir / "fmap"
+        fmap_dir.mkdir(parents=True)
+        dwi_dir = participant_dir / "dwi"
+        dwi_dir.mkdir(parents=True)
+        (dwi_dir / "sub-01_dwi.nii.gz").touch()
+        fmap_json = fmap_dir / "sub-01_acq-dwi_epi.json"
+        fmap_json.write_text("{}")
+
+        results = {"errors": [], "updated_files": []}
+        with patch(
+            "voxelops.utils.bids._update_json_sidecar", return_value=True
+        ) as mock_update:
+            _process_single_fmap_json(fmap_json, participant_dir, None, False, results)
+            mock_update.assert_called_once()
+            assert results["updated_files"][0]["type"] == "DWI"
+            assert results["errors"] == []
+
+    def test_process_single_fmap_json_func(self, tmp_path):
+        participant_dir = tmp_path / "sub-01"
+        fmap_dir = participant_dir / "fmap"
+        fmap_dir.mkdir(parents=True)
+        func_dir = participant_dir / "func"
+        func_dir.mkdir(parents=True)
+        (func_dir / "sub-01_bold.nii.gz").touch()
+        fmap_json = fmap_dir / "sub-01_acq-func_epi.json"
+        fmap_json.write_text("{}")
+
+        results = {"errors": [], "updated_files": []}
+        with patch(
+            "voxelops.utils.bids._update_json_sidecar", return_value=True
+        ) as mock_update:
+            _process_single_fmap_json(fmap_json, participant_dir, None, False, results)
+            mock_update.assert_called_once()
+            assert results["updated_files"][0]["type"] == "functional"
+            assert results["errors"] == []
+
+    def test_process_single_fmap_json_unknown_acq(self, tmp_path):
+        participant_dir = tmp_path / "sub-01"
+        fmap_dir = participant_dir / "fmap"
+        fmap_dir.mkdir(parents=True)
+        fmap_json = fmap_dir / "sub-01_acq-unknown_epi.json"
+        fmap_json.write_text("{}")
+
+        results = {"errors": [], "updated_files": []}
+        _process_single_fmap_json(fmap_json, participant_dir, None, False, results)
+        assert "Unknown acquisition type" in results["errors"][0]
+
+    def test_process_single_fmap_json_no_targets(self, tmp_path):
+        participant_dir = tmp_path / "sub-01"
+        fmap_dir = participant_dir / "fmap"
+        fmap_dir.mkdir(parents=True)
+        fmap_json = fmap_dir / "sub-01_acq-dwi_epi.json"
+        fmap_json.write_text("{}")  # No dwi dir
+
+        results = {"errors": [], "updated_files": []}
+        _process_single_fmap_json(fmap_json, participant_dir, None, False, results)
+        assert "No target files found" in results["errors"][0]
+
+    def test_process_single_fmap_json_update_fail(self, tmp_path):
+        participant_dir = tmp_path / "sub-01"
+        fmap_dir = participant_dir / "fmap"
+        fmap_dir.mkdir(parents=True)
+        dwi_dir = participant_dir / "dwi"
+        dwi_dir.mkdir(parents=True)
+        (dwi_dir / "sub-01_dwi.nii.gz").touch()
+        fmap_json = fmap_dir / "sub-01_acq-dwi_epi.json"
+        fmap_json.write_text("{}")
+
+        results = {"errors": [], "updated_files": []}
+        with patch("voxelops.utils.bids._update_json_sidecar", return_value=False):
+            _process_single_fmap_json(fmap_json, participant_dir, None, False, results)
+            assert "Failed to update" in results["errors"][0]
+
+    def test_process_single_fmap_json_dry_run(self, tmp_path):
+        participant_dir = tmp_path / "sub-01"
+        fmap_dir = participant_dir / "fmap"
+        fmap_dir.mkdir(parents=True)
+        dwi_dir = participant_dir / "dwi"
+        dwi_dir.mkdir(parents=True)
+        (dwi_dir / "sub-01_dwi.nii.gz").touch()
+        fmap_json = fmap_dir / "sub-01_acq-dwi_epi.json"
+        fmap_json.write_text("{}")
+
+        results = {"errors": [], "updated_files": []}
+        with patch("voxelops.utils.bids._update_json_sidecar") as mock_update:
+            _process_single_fmap_json(fmap_json, participant_dir, None, True, results)
+            mock_update.assert_not_called()
+            assert "Dry run" in results["updated_files"][0]["note"]

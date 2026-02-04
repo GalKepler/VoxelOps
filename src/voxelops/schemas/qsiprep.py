@@ -95,6 +95,16 @@ class QSIPrepOutputs:
             figures_dir=participant_dir / "figures",
         )
 
+    def exist(self) -> bool:
+        """Check if key outputs exist.
+
+        Returns
+        -------
+        bool
+            True if participant directory and HTML report exist.
+        """
+        return self.participant_dir.exists() and self.html_report.exists()
+
 
 @dataclass
 class QSIPrepDefaults:
@@ -120,6 +130,8 @@ class QSIPrepDefaults:
         Path to FreeSurfer license file, by default None.
     docker_image : str, optional
         Docker image to use, by default "pennlinc/qsiprep:latest".
+    force : bool, optional
+        Force re-run even if outputs exist, by default False.
     """
 
     nprocs: int = 8
@@ -133,6 +145,7 @@ class QSIPrepDefaults:
     skip_bids_validation: bool = False
     fs_license: Optional[Path] = None
     docker_image: str = "pennlinc/qsiprep:latest"
+    force: bool = False
 
     def __post_init__(self):
         """Ensure fs_license is Path object if provided."""

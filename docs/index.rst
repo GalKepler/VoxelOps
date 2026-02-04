@@ -124,6 +124,7 @@ Requirements: Python >= 3.8, Docker installed and accessible.
 
    getting_started
    workflows
+   validation
    source/modules
    tutorials
    contributing

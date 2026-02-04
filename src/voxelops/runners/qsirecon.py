@@ -82,6 +82,30 @@ def run_qsirecon(
     # Generate expected outputs
     expected_outputs = QSIReconOutputs.from_inputs(inputs, output_dir, work_dir)
 
+    # Check if outputs already exist and skip if not forcing
+    if expected_outputs.exist() and not config.force:
+        print("\n" + "=" * 80)
+        print(f"✓ QSIRecon outputs already exist for participant {inputs.participant}")
+        print(f"  QSIRecon dir: {expected_outputs.qsirecon_dir}")
+        print("  Workflow reports:")
+        for workflow, sessions in expected_outputs.workflow_reports.items():
+            for session, path in sessions.items():
+                session_label = f"ses-{session}" if session else "no-session"
+                print(f"    - {workflow}/{session_label}: {path}")
+        print("  Use force=True to re-run")
+        print("=" * 80 + "\n")
+
+        return {
+            "tool": "qsirecon",
+            "participant": inputs.participant,
+            "skipped": True,
+            "reason": "outputs_exist",
+            "success": True,
+            "inputs": inputs,
+            "config": config,
+            "expected_outputs": expected_outputs,
+        }
+
     # Get current user/group IDs for Docker
     uid = os.getuid()
     gid = os.getgid()
@@ -141,11 +165,9 @@ def run_qsirecon(
         for name in inputs.datasets.keys():
             addition = f"{name}=/datasets/{name}"
             cmd.extend([addition])
-    # Atlases
-    if config.atlases:
-        cmd.extend(["--atlases", *config.atlases])
+    # Atlases (optional - some recon specs may not require them)
     if inputs.atlases:
-        cmd.extend([*inputs.atlases])
+        cmd.extend(["--atlases", *inputs.atlases])
     # Optional arguments
     if inputs.recon_spec and inputs.recon_spec.exists():
         cmd.extend(["--recon-spec", "/recon_spec.yaml"])
@@ -169,5 +191,6 @@ def run_qsirecon(
     result["inputs"] = inputs
     result["config"] = config
     result["expected_outputs"] = expected_outputs
+    result["skipped"] = False
 
     return result
