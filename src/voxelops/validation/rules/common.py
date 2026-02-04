@@ -233,11 +233,13 @@ class GlobFilesExistRule(ValidationRule):
         file_type: str = "Files",
         severity: str = "error",
         phase: str = "pre",
+        participant_level: bool = True,
     ):
         self.base_dir_attr = base_dir_attr
         self.pattern = pattern
         self.min_count = min_count
         self.file_type = file_type
+        self.participant_level = participant_level
         self.name = f"{file_type.lower().replace(' ', '_')}_exist"
         self.description = f"Verify {file_type} exist (pattern: {pattern})"
         self.severity = severity
@@ -273,13 +275,27 @@ class GlobFilesExistRule(ValidationRule):
                 {"base_dir": str(base_dir), "pattern": self.pattern},
             )
 
-        # Build search path with participant/session
-        search_dir = base_dir / context.participant_label
-        if context.session:
-            search_dir = search_dir / context.session_label
+        # Build search path with participant/session if needed
+        if self.participant_level:
+            # For BIDS-root directories, append participant/session
+            search_dir = base_dir / context.participant_label
+            if context.session:
+                search_dir = search_dir / context.session_label
 
-        # If search_dir doesn't exist, try base_dir directly
-        if not search_dir.exists():
+            # Participant/session directory must exist
+            # This ensures we only check files for the specific participant being processed
+            if not search_dir.exists():
+                return self._fail(
+                    f"Participant directory does not exist: {search_dir}",
+                    {
+                        "base_dir": str(base_dir),
+                        "participant": context.participant,
+                        "session": context.session,
+                        "expected_path": str(search_dir),
+                    },
+                )
+        else:
+            # base_dir is already participant-specific (e.g., post-validation outputs)
             search_dir = base_dir
 
         found_files = list(search_dir.glob(self.pattern))

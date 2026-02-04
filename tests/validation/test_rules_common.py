@@ -331,7 +331,8 @@ class TestGlobFilesExistRule:
 
     def test_fails_when_files_missing(self, tmp_path):
         bids_dir = tmp_path / "bids"
-        bids_dir.mkdir()  # No dwi dir or files
+        # Create participant directory but no dwi files
+        (bids_dir / "sub-01").mkdir(parents=True)
 
         rule = GlobFilesExistRule(
             base_dir_attr="bids_dir", pattern="dwi/*_dwi.nii.gz", file_type="DWI files"
@@ -344,6 +345,25 @@ class TestGlobFilesExistRule:
         result = rule.check(context)
         assert not result.passed
         assert "Found 0 DWI files" in result.message
+
+    def test_fails_when_participant_dir_missing(self, tmp_path):
+        """Test that it fails when participant directory doesn't exist."""
+        bids_dir = tmp_path / "bids"
+        bids_dir.mkdir()
+        # No participant directory created
+
+        rule = GlobFilesExistRule(
+            base_dir_attr="bids_dir", pattern="dwi/*_dwi.nii.gz", file_type="DWI files"
+        )
+        context = ValidationContext(
+            procedure_name="test",
+            participant="01",
+            inputs=MockInputs(bids_dir=bids_dir),
+        )
+        result = rule.check(context)
+        assert not result.passed
+        assert "Participant directory does not exist" in result.message
+        assert "sub-01" in result.details["expected_path"]
 
     def test_fails_when_base_dir_missing(self, tmp_path):
         rule = GlobFilesExistRule(
@@ -404,6 +424,7 @@ class TestGlobFilesExistRule:
             pattern="sub-01_dwi.nii.gz",
             file_type="DWI files",
             phase="post",
+            participant_level=False,  # base_dir is already participant-specific
         )
         context = ValidationContext(
             procedure_name="test",

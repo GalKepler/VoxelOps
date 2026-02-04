@@ -46,5 +46,6 @@ class QSIReconValidator(Validator):
             min_count=1,
             file_type="Reconstruction outputs",
             phase="post",
+            participant_level=False,  # participant_dir is already participant-specific
         ),
     ]

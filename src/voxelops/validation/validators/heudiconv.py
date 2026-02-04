@@ -24,6 +24,7 @@ class HeudiConvValidator(Validator):
             pattern="**/*.dcm",
             min_count=1,
             file_type="DICOM files",
+            participant_level=False,  # DICOM dirs aren't BIDS-structured
         ),
     ]
 

@@ -37,5 +37,6 @@ class QSIParcValidator(Validator):
             min_count=1,
             file_type="Parcellation results",
             phase="post",
+            participant_level=False,  # output_dir is already participant-specific
         ),
     ]
