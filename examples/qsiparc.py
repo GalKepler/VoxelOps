@@ -7,10 +7,10 @@ runs the `parcellate` Python package directly (not via Docker).
 """
 
 from pathlib import Path
+
 from voxelops import (
-    run_qsiparc,
     QSIParcInputs,
-    QSIParcDefaults,
+    run_qsiparc,
 )
 
 # Input paths -- update these to match your setup

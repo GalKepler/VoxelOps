@@ -3,11 +3,10 @@
 from pathlib import Path
 
 from voxelops.schemas.qsiprep import (
+    QSIPrepDefaults,
     QSIPrepInputs,
     QSIPrepOutputs,
-    QSIPrepDefaults,
 )
-
 
 # -- QSIPrepInputs -----------------------------------------------------------
 

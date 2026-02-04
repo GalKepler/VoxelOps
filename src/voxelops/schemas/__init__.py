@@ -1,24 +1,24 @@
 """Schemas for procedure inputs, outputs, and defaults."""
 
 from voxelops.schemas.heudiconv import (
+    HeudiconvDefaults,
     HeudiconvInputs,
     HeudiconvOutputs,
-    HeudiconvDefaults,
-)
-from voxelops.schemas.qsiprep import (
-    QSIPrepInputs,
-    QSIPrepOutputs,
-    QSIPrepDefaults,
-)
-from voxelops.schemas.qsirecon import (
-    QSIReconInputs,
-    QSIReconOutputs,
-    QSIReconDefaults,
 )
 from voxelops.schemas.qsiparc import (
+    QSIParcDefaults,
     QSIParcInputs,
     QSIParcOutputs,
-    QSIParcDefaults,
+)
+from voxelops.schemas.qsiprep import (
+    QSIPrepDefaults,
+    QSIPrepInputs,
+    QSIPrepOutputs,
+)
+from voxelops.schemas.qsirecon import (
+    QSIReconDefaults,
+    QSIReconInputs,
+    QSIReconOutputs,
 )
 
 __all__ = [

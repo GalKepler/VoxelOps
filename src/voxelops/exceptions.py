@@ -138,7 +138,7 @@ class DependencyError(YALabProcedureError):
 
     This includes missing Docker, missing command-line tools, or
     unavailable Python packages.
-    
+
     Parameters
     ----------
     dependency : str

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 
 
 @dataclass
@@ -49,7 +49,7 @@ class QSIReconInputs:
             self.recon_spec = Path(self.recon_spec)
         if self.datasets:
             self.datasets = {k: Path(v) for k, v in self.datasets.items()}
-        
+
 
 
 @dataclass

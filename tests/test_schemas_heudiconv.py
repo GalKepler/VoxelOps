@@ -3,11 +3,10 @@
 from pathlib import Path
 
 from voxelops.schemas.heudiconv import (
+    HeudiconvDefaults,
     HeudiconvInputs,
     HeudiconvOutputs,
-    HeudiconvDefaults,
 )
-
 
 # -- HeudiconvInputs ---------------------------------------------------------
 

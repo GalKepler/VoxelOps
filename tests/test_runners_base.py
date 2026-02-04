@@ -3,13 +3,12 @@
 import json
 import subprocess
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
 from voxelops.exceptions import InputValidationError, ProcedureExecutionError
-from voxelops.runners._base import validate_input_dir, validate_participant, run_docker
-
+from voxelops.runners._base import run_docker, validate_input_dir, validate_participant
 
 # -- validate_input_dir -------------------------------------------------------
 

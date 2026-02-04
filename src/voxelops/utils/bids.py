@@ -457,7 +457,7 @@ def _read_json_sidecar(json_path: Path) -> Optional[Dict[str, Any]]:
         Dictionary with JSON contents, or None if reading fails.
     """
     try:
-        with open(json_path, "r") as f:
+        with open(json_path) as f:
             return json.load(f)
     except Exception as e:
         print(f"Error reading {json_path}: {e}")

@@ -1,13 +1,12 @@
 """Tests for voxelops.runners.qsirecon -- run_qsirecon."""
 
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
 from voxelops.exceptions import InputValidationError
-from voxelops.schemas.qsirecon import QSIReconInputs, QSIReconDefaults
 from voxelops.runners.qsirecon import run_qsirecon
+from voxelops.schemas.qsirecon import QSIReconDefaults, QSIReconInputs
 
 
 def _docker_ok():

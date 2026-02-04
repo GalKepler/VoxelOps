@@ -3,11 +3,10 @@
 from pathlib import Path
 
 from voxelops.schemas.qsirecon import (
+    QSIReconDefaults,
     QSIReconInputs,
     QSIReconOutputs,
-    QSIReconDefaults,
 )
-
 
 # -- QSIReconInputs ----------------------------------------------------------
 

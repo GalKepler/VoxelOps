@@ -1,20 +1,18 @@
 """Tests for voxelops.exceptions -- exception hierarchy and messages."""
 
-import pytest
 
 from voxelops.exceptions import (
-    YALabProcedureError,
-    ProcedureExecutionError,
-    ProcedureConfigurationError,
-    InputValidationError,
-    OutputCollectionError,
-    DockerExecutionError,
-    FreeSurferLicenseError,
     BIDSValidationError,
     DependencyError,
+    DockerExecutionError,
+    FreeSurferLicenseError,
+    InputValidationError,
+    OutputCollectionError,
+    ProcedureConfigurationError,
     ProcedureError,
+    ProcedureExecutionError,
+    YALabProcedureError,
 )
-
 
 # -- Hierarchy / instantiation -----------------------------------------------
 

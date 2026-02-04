@@ -1,15 +1,13 @@
 """Tests for voxelops.runners.qsiparc -- run_qsiparc."""
 
 import logging
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from voxelops.exceptions import InputValidationError, ProcedureExecutionError
-from voxelops.schemas.qsiparc import QSIParcInputs, QSIParcDefaults
 from voxelops.runners.qsiparc import run_qsiparc
-
+from voxelops.schemas.qsiparc import QSIParcDefaults, QSIParcInputs
 
 # -- Config -------------------------------------------------------------------
 

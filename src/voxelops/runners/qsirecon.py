@@ -1,8 +1,7 @@
 """QSIRecon diffusion reconstruction runner."""
 
 import os
-from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from voxelops.runners._base import (
     run_docker,
@@ -10,9 +9,9 @@ from voxelops.runners._base import (
     validate_participant,
 )
 from voxelops.schemas.qsirecon import (
+    QSIReconDefaults,
     QSIReconInputs,
     QSIReconOutputs,
-    QSIReconDefaults,
 )
 
 
@@ -111,7 +110,7 @@ def run_qsirecon(
 
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
         cmd.extend(["-v", f"{config.fs_subjects_dir}:/subjects:ro"])
-    
+
     if inputs.datasets:
         for name, path in inputs.datasets.items():
             cmd.extend(["-v", f"{path}:/datasets/{name}:ro"])

@@ -2,21 +2,21 @@
 
 import logging
 from datetime import datetime
-from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, Optional
 
+from parcellate.interfaces.qsirecon.models import QSIReconConfig
+from parcellate.interfaces.qsirecon.qsirecon import run_parcellations
+
+from voxelops.exceptions import ProcedureExecutionError
 from voxelops.runners._base import (
     validate_input_dir,
     validate_participant,
 )
 from voxelops.schemas.qsiparc import (
+    QSIParcDefaults,
     QSIParcInputs,
     QSIParcOutputs,
-    QSIParcDefaults,
 )
-from voxelops.exceptions import ProcedureExecutionError
-from parcellate.interfaces.qsirecon.models import QSIReconConfig
-from parcellate.interfaces.qsirecon.qsirecon import run_parcellations
 
 
 def run_qsiparc(
@@ -133,7 +133,7 @@ def run_qsiparc(
         }
 
         print(f"\n{'='*80}")
-        print(f"qsiparc completed successfully")
+        print("qsiparc completed successfully")
         print(f"Duration: {duration}")
         print(f"Output files: {len(output_files)}")
         print(f"{'='*80}\n")
@@ -147,4 +147,4 @@ def run_qsiparc(
             procedure_name="qsiparc",
             message=str(e),
             original_error=e,
-        )
+        ) from e

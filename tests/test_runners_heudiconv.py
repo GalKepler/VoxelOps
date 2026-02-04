@@ -1,16 +1,15 @@
 """Tests for voxelops.runners.heudiconv -- run_heudiconv."""
 
-from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 import pytest
 
 from voxelops.exceptions import InputValidationError
-from voxelops.schemas.heudiconv import (
-    HeudiconvInputs,
-    HeudiconvDefaults,
-)
 from voxelops.runners.heudiconv import run_heudiconv
+from voxelops.schemas.heudiconv import (
+    HeudiconvDefaults,
+    HeudiconvInputs,
+)
 
 
 def _make_inputs(tmp_path, *, session=None, output_dir=None):
@@ -274,5 +273,5 @@ class TestPostProcessing:
         failed["success"] = False
         mock_rd.return_value = failed
         inputs, heuristic = _make_inputs(tmp_path)
-        result = run_heudiconv(inputs, heuristic=heuristic)
+        _ = run_heudiconv(inputs, heuristic=heuristic)
         mock_pp.assert_not_called()

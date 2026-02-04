@@ -1,16 +1,15 @@
 """HeudiConv DICOM to BIDS converter runner."""
 
 import os
-from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
+from voxelops.exceptions import InputValidationError
 from voxelops.runners._base import run_docker, validate_input_dir
 from voxelops.schemas.heudiconv import (
+    HeudiconvDefaults,
     HeudiconvInputs,
     HeudiconvOutputs,
-    HeudiconvDefaults,
 )
-from voxelops.exceptions import InputValidationError
 from voxelops.utils.bids import post_process_heudiconv_output
 
 

@@ -4,7 +4,7 @@ import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import Any, Dict, List, Optional
 
 from voxelops.exceptions import (
     InputValidationError,
@@ -182,10 +182,10 @@ def run_docker(
         raise ProcedureExecutionError(
             procedure_name=tool_name,
             message=f"Process timed out after {e.timeout} seconds",
-        )
+        ) from e
     except Exception as e:
         if not isinstance(e, ProcedureExecutionError):
             raise ProcedureExecutionError(
                 procedure_name=tool_name, message=str(e), original_error=e
-            )
+            ) from e
         raise

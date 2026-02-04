@@ -1,13 +1,12 @@
 """Tests for voxelops.runners.qsiprep -- run_qsiprep."""
 
-from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
 from voxelops.exceptions import InputValidationError
-from voxelops.schemas.qsiprep import QSIPrepInputs, QSIPrepDefaults
 from voxelops.runners.qsiprep import run_qsiprep
+from voxelops.schemas.qsiprep import QSIPrepDefaults, QSIPrepInputs
 
 
 def _docker_ok():

@@ -3,7 +3,9 @@
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
 from parcellate.interfaces.models import AtlasDefinition
+
 
 @dataclass
 class QSIParcInputs:

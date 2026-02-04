@@ -1,8 +1,7 @@
 """QSIPrep diffusion preprocessing runner."""
 
 import os
-from pathlib import Path
-from typing import Dict, Optional, Any
+from typing import Any, Dict, Optional
 
 from voxelops.runners._base import (
     run_docker,
@@ -10,9 +9,9 @@ from voxelops.runners._base import (
     validate_participant,
 )
 from voxelops.schemas.qsiprep import (
+    QSIPrepDefaults,
     QSIPrepInputs,
     QSIPrepOutputs,
-    QSIPrepDefaults,
 )
 
 

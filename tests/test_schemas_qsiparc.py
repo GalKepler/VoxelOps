@@ -3,11 +3,10 @@
 from pathlib import Path
 
 from voxelops.schemas.qsiparc import (
+    QSIParcDefaults,
     QSIParcInputs,
     QSIParcOutputs,
-    QSIParcDefaults,
 )
-
 
 # -- QSIParcInputs -----------------------------------------------------------
 

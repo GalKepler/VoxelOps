@@ -5,20 +5,17 @@ import stat
 from pathlib import Path
 from unittest.mock import patch
 
-import pytest
-
 from voxelops.utils.bids import (
-    post_process_heudiconv_output,
-    verify_fmap_epi_files,
-    add_intended_for_to_fmaps,
-    remove_bval_bvec_from_fmaps,
+    _build_intended_for_path,
     _find_dwi_targets,
     _find_func_targets,
-    _build_intended_for_path,
-    _update_json_sidecar,
     _read_json_sidecar,
+    _update_json_sidecar,
+    add_intended_for_to_fmaps,
+    post_process_heudiconv_output,
+    remove_bval_bvec_from_fmaps,
+    verify_fmap_epi_files,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -235,7 +232,7 @@ class TestAddIntendedForToFmaps:
     def test_update_success(self, tmp_path):
         _add_fmap(tmp_path)
         _add_dwi(tmp_path)
-        result = add_intended_for_to_fmaps(tmp_path)
+        _ = add_intended_for_to_fmaps(tmp_path)
         # Verify JSON was updated
         fmap_json = tmp_path / "fmap" / "sub-01_acq-dwi_epi.json"
         data = json.loads(fmap_json.read_text())

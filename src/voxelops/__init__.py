@@ -36,38 +36,37 @@ __email__ = "yalab.dev@gmail.com"
 __version__ = "2.0.0"
 
 # Runner functions
+# Exceptions
+from voxelops.exceptions import (
+    InputValidationError,
+    ProcedureError,
+    ProcedureExecutionError,
+)
 from voxelops.runners import (
     run_heudiconv,
+    run_qsiparc,
     run_qsiprep,
     run_qsirecon,
-    run_qsiparc,
 )
 
 # Schemas for inputs, outputs, and defaults
 from voxelops.schemas import (
+    HeudiconvDefaults,
     # HeudiConv
     HeudiconvInputs,
     HeudiconvOutputs,
-    HeudiconvDefaults,
-    # QSIPrep
-    QSIPrepInputs,
-    QSIPrepOutputs,
-    QSIPrepDefaults,
-    # QSIRecon
-    QSIReconInputs,
-    QSIReconOutputs,
-    QSIReconDefaults,
+    QSIParcDefaults,
     # QSIParc
     QSIParcInputs,
     QSIParcOutputs,
-    QSIParcDefaults,
-)
-
-# Exceptions
-from voxelops.exceptions import (
-    ProcedureError,
-    InputValidationError,
-    ProcedureExecutionError,
+    QSIPrepDefaults,
+    # QSIPrep
+    QSIPrepInputs,
+    QSIPrepOutputs,
+    QSIReconDefaults,
+    # QSIRecon
+    QSIReconInputs,
+    QSIReconOutputs,
 )
 
 __all__ = [
