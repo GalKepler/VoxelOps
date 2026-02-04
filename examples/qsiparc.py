@@ -10,15 +10,16 @@ from pathlib import Path
 
 from voxelops import (
     QSIParcInputs,
-    run_qsiparc,
 )
+from voxelops.procedures.orchestrator import run_procedure
 
 # Input paths -- update these to match your setup
-qsirecon_dir = Path("/data/derivatives/qsirecon/")
-participant = "01"
+qsirecon_dir = Path("/media/storage/yalab-dev/qsiprep_test/derivatives/qsirecon/")
+participant = "CLMC10"
 
 # Output paths (optional)
-output_dir = Path("/data/derivatives/qsiparc/")
+output_dir = Path("/media/storage/yalab-dev/qsiprep_test/derivatives/qsiparc/")
+log_dir = Path("/media/storage/yalab-dev/qsiprep_test/logs")
 
 # Create inputs
 inputs = QSIParcInputs(
@@ -30,8 +31,19 @@ inputs = QSIParcInputs(
 )
 
 # Run with defaults (atlases are auto-discovered from qsirecon outputs)
-result = run_qsiparc(inputs)
+result = run_procedure(procedure="qsiparc", inputs=inputs, log_dir=log_dir)
 
-print(f"Success: {result['success']}")
-print(f"Duration: {result['duration_human']}")
-print(f"Output files: {len(result['output_files'])}")
+
+if result.success:
+    print(f"✓ Success! Completed in {result.duration_seconds:.1f}s")
+    print("\nExpected workflow directories:")
+    for workflow_name, session_dirs in result.execution[
+        "expected_outputs"
+    ].workflow_dirs.items():
+        print(f"  Workflow: {workflow_name}")
+        for session_id, dwi_dir in session_dirs.items():
+            session_label = f"ses-{session_id}" if session_id else "no-session"
+            status = "✓" if dwi_dir.exists() else "✗"
+            print(f"    {status} {session_label}: {dwi_dir}")
+else:
+    print(f"✗ Failed: {result.get_failure_reason()}")

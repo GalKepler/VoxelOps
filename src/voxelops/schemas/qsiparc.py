@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 from parcellate.interfaces.models import AtlasDefinition
 
@@ -53,9 +53,50 @@ class QSIParcOutputs:
     ----------
     output_dir : Path
         Parcellation output directory.
+    workflow_dirs : Dict[str, Dict[Optional[str], Path]]
+        Nested dictionary of expected dwi directories:
+        {workflow_name: {session_id: dwi_dir_path}}.
+        For datasets without sessions, session_id will be None.
     """
 
     output_dir: Path
+    workflow_dirs: Dict[str, Dict[Optional[str], Path]]
+
+    def exist(self) -> bool:
+        """Check if key outputs exist.
+
+        Returns
+        -------
+        bool
+            True if all expected workflow dwi directories exist.
+        """
+        # Check if at least the main output directory exists
+        if not self.output_dir.exists():
+            return False
+
+        # Check if all workflow dwi directories exist
+        for workflow_dirs in self.workflow_dirs.values():
+            for dwi_dir in workflow_dirs.values():
+                if not dwi_dir.exists():
+                    return False
+
+        return True
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization.
+
+        Returns
+        -------
+        Dict[str, Any]
+            Dictionary with Path objects converted to strings.
+        """
+        return {
+            "output_dir": str(self.output_dir),
+            "workflow_dirs": {
+                workflow: {session: str(path) for session, path in sessions.items()}
+                for workflow, sessions in self.workflow_dirs.items()
+            },
+        }
 
     @classmethod
     def from_inputs(cls, inputs: QSIParcInputs, output_dir: Path):
@@ -66,14 +107,53 @@ class QSIParcOutputs:
         inputs : QSIParcInputs
             QSIParcInputs instance.
         output_dir : Path
-            Resolved output directory.
+            Resolved output directory (qsiparc output directory).
 
         Returns
         -------
         QSIParcOutputs
             QSIParcOutputs with expected paths.
         """
-        return cls(output_dir=output_dir)
+        # Discover sessions from qsirecon output
+        sessions = _discover_sessions(inputs.qsirecon_dir, inputs.participant)
+
+        # If a specific session is requested, filter to only that session
+        if inputs.session:
+            sessions = [inputs.session] if inputs.session in sessions else []
+
+        # Extract workflow names from qsirecon directory
+        workflows = _discover_workflows(inputs.qsirecon_dir)
+
+        # Generate expected dwi directories for each workflow × session
+        workflow_dirs = {}
+        for workflow_name in workflows:
+            workflow_dirs[workflow_name] = {}
+
+            if sessions:
+                # Multi-session dataset
+                for session in sessions:
+                    dwi_dir = (
+                        output_dir
+                        / f"qsirecon-{workflow_name}"
+                        / f"sub-{inputs.participant}"
+                        / f"ses-{session}"
+                        / "dwi"
+                    )
+                    workflow_dirs[workflow_name][session] = dwi_dir
+            else:
+                # Single-session dataset (no session subdirectories)
+                dwi_dir = (
+                    output_dir
+                    / f"qsirecon-{workflow_name}"
+                    / f"sub-{inputs.participant}"
+                    / "dwi"
+                )
+                workflow_dirs[workflow_name][None] = dwi_dir
+
+        return cls(
+            output_dir=output_dir,
+            workflow_dirs=workflow_dirs,
+        )
 
 
 @dataclass
@@ -105,3 +185,80 @@ class QSIParcDefaults:
     log_level: str = "INFO"
     n_jobs: Optional[int] = 1
     n_procs: Optional[int] = 1
+
+
+def _discover_sessions(qsirecon_dir: Path, participant: str) -> List[str]:
+    """Discover session IDs from QSIRecon output directory.
+
+    Parameters
+    ----------
+    qsirecon_dir : Path
+        QSIRecon output directory.
+    participant : str
+        Participant label (without 'sub-' prefix).
+
+    Returns
+    -------
+    List[str]
+        List of session IDs (without 'ses-' prefix), or empty list if no sessions.
+    """
+    derivatives_dir = qsirecon_dir / "derivatives"
+
+    if not derivatives_dir.exists():
+        return []
+
+    # Look for session directories in any qsirecon workflow directory
+    workflow_dirs = [
+        d
+        for d in derivatives_dir.iterdir()
+        if d.is_dir() and d.name.startswith("qsirecon-")
+    ]
+
+    if not workflow_dirs:
+        return []
+
+    # Check first workflow directory for participant/session structure
+    participant_dir = workflow_dirs[0] / f"sub-{participant}"
+
+    if not participant_dir.exists():
+        return []
+
+    # Look for session subdirectories
+    session_dirs = [
+        d for d in participant_dir.iterdir() if d.is_dir() and d.name.startswith("ses-")
+    ]
+
+    if session_dirs:
+        # Multi-session dataset
+        return sorted([d.name.replace("ses-", "") for d in session_dirs])
+    else:
+        # Single-session dataset (no session subdirectories)
+        return []
+
+
+def _discover_workflows(qsirecon_dir: Path) -> List[str]:
+    """Discover workflow names from QSIRecon output directory.
+
+    Parameters
+    ----------
+    qsirecon_dir : Path
+        QSIRecon output directory.
+
+    Returns
+    -------
+    List[str]
+        List of workflow suffixes found in the derivatives directory.
+    """
+    derivatives_dir = qsirecon_dir / "derivatives"
+
+    if not derivatives_dir.exists():
+        return []
+
+    # Find all qsirecon-* directories
+    workflow_dirs = [
+        d.name.replace("qsirecon-", "")
+        for d in derivatives_dir.iterdir()
+        if d.is_dir() and d.name.startswith("qsirecon-")
+    ]
+
+    return sorted(workflow_dirs) if workflow_dirs else []
