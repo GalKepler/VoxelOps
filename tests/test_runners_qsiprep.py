@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from voxelops.exceptions import InputValidationError
 from voxelops.runners.qsiprep import (
     _build_qsiprep_docker_command,

@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from voxelops.exceptions import InputValidationError
 from voxelops.runners.qsirecon import run_qsirecon
 from voxelops.schemas.qsirecon import QSIReconDefaults, QSIReconInputs
