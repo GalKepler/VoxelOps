@@ -1,6 +1,7 @@
 """QSIPrep diffusion preprocessing runner."""
 
 import os
+from pathlib import Path
 from typing import Any, Dict, Optional
 
 from voxelops.runners._base import (
@@ -15,76 +16,13 @@ from voxelops.schemas.qsiprep import (
 )
 
 
-def run_qsiprep(
-    inputs: QSIPrepInputs, config: Optional[QSIPrepDefaults] = None, **overrides
-) -> Dict[str, Any]:
-    """Run QSIPrep diffusion MRI preprocessing.
-
-    Parameters
-    ----------
-    inputs : QSIPrepInputs
-        Required inputs (bids_dir, participant, etc.).
-    config : Optional[QSIPrepDefaults], optional
-        Configuration (uses brain bank defaults if not provided), by default None.
-    **overrides
-        Override any config parameter (e.g., nprocs=16).
-
-    Returns
-    -------
-    Dict[str, Any]
-        Execution record with:
-            - tool: "qsiprep"
-            - participant: Participant label
-            - command: Full Docker command executed
-            - exit_code: Process exit code
-            - start_time, end_time: ISO format timestamps
-            - duration_seconds, duration_human: Execution duration
-            - success: Boolean success status
-            - log_file: Path to JSON log
-            - inputs: QSIPrepInputs instance
-            - config: QSIPrepDefaults instance
-            - expected_outputs: QSIPrepOutputs instance
-
-    Raises
-    ------
-    InputValidationError
-        If inputs are invalid.
-    ProcedureExecutionError
-        If preprocessing fails.
-
-    Examples
-    --------
-    >>> inputs = QSIPrepInputs(
-    ...     bids_dir=Path("/data/bids"),
-    ...     participant="01",
-    ... )
-    >>> result = run_qsiprep(inputs, nprocs=16)  # Override default nprocs
-    >>> print(f"Completed in {result['duration_human']}")
-    >>> print(f"Outputs in: {result['expected_outputs'].qsiprep_dir}")
-    """
-    # Use brain bank defaults if config not provided
-    config = config or QSIPrepDefaults()
-
-    # Apply overrides
-    for key, value in overrides.items():
-        if hasattr(config, key):
-            setattr(config, key, value)
-
-    # Validate inputs
-    validate_input_dir(inputs.bids_dir, "BIDS")
-    validate_participant(inputs.bids_dir, inputs.participant)
-
-    # Setup directories
-    output_dir = inputs.output_dir or (inputs.bids_dir.parent / "derivatives")
-    work_dir = inputs.work_dir or (output_dir.parent / "work" / "qsiprep")
-    output_dir.mkdir(parents=True, exist_ok=True)
-    work_dir.mkdir(parents=True, exist_ok=True)
-
-    # Generate expected outputs
-    expected_outputs = QSIPrepOutputs.from_inputs(inputs, output_dir, work_dir)
-
-    # Build Docker command
-    # Get current user/group IDs to avoid permission issues
+def _build_qsiprep_docker_command(
+    inputs: QSIPrepInputs,
+    config: QSIPrepDefaults,
+    output_dir: Path,
+    work_dir: Path,
+) -> list[str]:
+    """Builds the Docker command for QSIPrep."""
     uid = os.getuid()
     gid = os.getgid()
 
@@ -157,6 +95,80 @@ def run_qsiprep(
 
     if inputs.bids_filters and inputs.bids_filters.exists():
         cmd.extend(["--bids-filter-file", "/bids_filters.json"])
+
+    return cmd
+
+
+def run_qsiprep(
+    inputs: QSIPrepInputs, config: Optional[QSIPrepDefaults] = None, **overrides
+) -> Dict[str, Any]:
+    """Run QSIPrep diffusion MRI preprocessing.
+
+    Parameters
+    ----------
+    inputs : QSIPrepInputs
+        Required inputs (bids_dir, participant, etc.).
+    config : Optional[QSIPrepDefaults], optional
+        Configuration (uses brain bank defaults if not provided), by default None.
+    **overrides
+        Override any config parameter (e.g., nprocs=16).
+
+    Returns
+    -------
+    Dict[str, Any]
+        Execution record with:
+            - tool: "qsiprep"
+            - participant: Participant label
+            - command: Full Docker command executed
+            - exit_code: Process exit code
+            - start_time, end_time: ISO format timestamps
+            - duration_seconds, duration_human: Execution duration
+            - success: Boolean success status
+            - log_file: Path to JSON log
+            - inputs: QSIPrepInputs instance
+            - config: QSIPrepDefaults instance
+            - expected_outputs: QSIPrepOutputs instance
+
+    Raises
+    ------
+    InputValidationError
+        If inputs are invalid.
+    ProcedureExecutionError
+        If preprocessing fails.
+
+    Examples
+    --------
+    >>> inputs = QSIPrepInputs(
+    ...     bids_dir=Path("/data/bids"),
+    ...     participant="01",
+    ... )
+    >>> result = run_qsiprep(inputs, nprocs=16)  # Override default nprocs
+    >>> print(f"Completed in {result['duration_human']}")
+    >>> print(f"Outputs in: {result['expected_outputs'].qsiprep_dir}")
+    """
+    # Use brain bank defaults if config not provided
+    config = config or QSIPrepDefaults()
+
+    # Apply overrides
+    for key, value in overrides.items():
+        if hasattr(config, key):
+            setattr(config, key, value)
+
+    # Validate inputs
+    validate_input_dir(inputs.bids_dir, "BIDS")
+    validate_participant(inputs.bids_dir, inputs.participant)
+
+    # Setup directories
+    output_dir = inputs.output_dir or (inputs.bids_dir.parent / "derivatives")
+    work_dir = inputs.work_dir or (output_dir.parent / "work" / "qsiprep")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    work_dir.mkdir(parents=True, exist_ok=True)
+
+    # Generate expected outputs
+    expected_outputs = QSIPrepOutputs.from_inputs(inputs, output_dir, work_dir)
+
+    # Build Docker command
+    cmd = _build_qsiprep_docker_command(inputs, config, output_dir, work_dir)
 
     # Execute
     log_dir = output_dir.parent / "logs"

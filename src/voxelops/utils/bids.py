@@ -3,7 +3,27 @@
 import json
 import stat
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
+
+
+def _run_post_processing_step(
+    step_func: Callable,
+    step_name: str,
+    results: Dict[str, Any],
+    *args,
+    **kwargs,
+) -> None:
+    """Helper to run a post-processing step and record its results."""
+    try:
+        step_result = step_func(*args, **kwargs)
+        results[step_name] = step_result
+
+        if not step_result["success"]:
+            results["errors"].extend(step_result.get("errors", []))
+            results["success"] = False
+    except Exception as e:
+        results["errors"].append(f"{step_name.capitalize()} failed: {e}")
+        results["success"] = False
 
 
 def post_process_heudiconv_output(
@@ -62,42 +82,33 @@ def post_process_heudiconv_output(
         return results
 
     # Step 1: Verify fieldmap EPI files exist
-    try:
-        verification_result = verify_fmap_epi_files(participant_dir, session)
-        results["verification"] = verification_result
-
-        if not verification_result["success"]:
-            results["errors"].extend(verification_result.get("errors", []))
-
-    except Exception as e:
-        results["errors"].append(f"Verification failed: {e}")
-        results["success"] = False
+    _run_post_processing_step(
+        verify_fmap_epi_files,
+        "verification",
+        results,
+        participant_dir,
+        session,
+    )
 
     # Step 2: Add IntendedFor to fieldmap JSONs
-    try:
-        intended_for_result = add_intended_for_to_fmaps(
-            participant_dir, session, dry_run
-        )
-        results["intended_for"] = intended_for_result
-
-        if not intended_for_result["success"]:
-            results["errors"].extend(intended_for_result.get("errors", []))
-
-    except Exception as e:
-        results["errors"].append(f"IntendedFor processing failed: {e}")
-        results["success"] = False
+    _run_post_processing_step(
+        add_intended_for_to_fmaps,
+        "intended_for",
+        results,
+        participant_dir,
+        session,
+        dry_run,
+    )
 
     # Step 3: Hide bval/bvec from fmap directories
-    try:
-        cleanup_result = remove_bval_bvec_from_fmaps(participant_dir, session, dry_run)
-        results["cleanup"] = cleanup_result
-
-        if not cleanup_result["success"]:
-            results["errors"].extend(cleanup_result.get("errors", []))
-
-    except Exception as e:
-        results["errors"].append(f"Cleanup failed: {e}")
-        results["success"] = False
+    _run_post_processing_step(
+        remove_bval_bvec_from_fmaps,
+        "cleanup",
+        results,
+        participant_dir,
+        session,
+        dry_run,
+    )
 
     return results
 
@@ -158,6 +169,68 @@ def verify_fmap_epi_files(
     return results
 
 
+def _process_single_fmap_json(
+    fmap_json: Path,
+    participant_dir: Path,
+    session: Optional[str],
+    dry_run: bool,
+    results: Dict[str, Any],
+) -> None:
+    """Processes a single fmap JSON file to add IntendedFor field."""
+    try:
+        # Determine acquisition type from filename
+        filename = fmap_json.name
+
+        if "acq-dwi" in filename:
+            # DWI fieldmap -> find DWI targets
+            target_files = _find_dwi_targets(participant_dir)
+            acq_type = "DWI"
+        elif "acq-func" in filename:
+            # Functional fieldmap -> find all BOLD targets
+            target_files = _find_func_targets(participant_dir)
+            acq_type = "functional"
+        else:
+            results["errors"].append(f"Unknown acquisition type in {filename}")
+            return
+
+        if not target_files:
+            results["errors"].append(f"No target files found for {filename}")
+            return
+
+        # Build IntendedFor paths (relative to session or participant directory)
+        intended_for_paths = [
+            _build_intended_for_path(target, participant_dir, session)
+            for target in target_files
+        ]
+
+        # Update JSON file
+        if not dry_run:
+            success = _update_json_sidecar(fmap_json, intended_for_paths)
+            if success:
+                results["updated_files"].append(
+                    {
+                        "file": str(fmap_json.name),
+                        "type": acq_type,
+                        "targets": intended_for_paths,
+                    }
+                )
+            else:
+                results["errors"].append(f"Failed to update {filename}")
+        else:
+            results["updated_files"].append(
+                {
+                    "file": str(fmap_json.name),
+                    "type": acq_type,
+                    "targets": intended_for_paths,
+                    "note": "Dry run - not modified",
+                }
+            )
+
+    except Exception as e:
+        results["errors"].append(f"Error processing {fmap_json.name}: {e}")
+        results["success"] = False
+
+
 def add_intended_for_to_fmaps(
     participant_dir: Path,
     session: Optional[str] = None,
@@ -208,58 +281,7 @@ def add_intended_for_to_fmaps(
         return results
 
     for fmap_json in fmap_jsons:
-        try:
-            # Determine acquisition type from filename
-            filename = fmap_json.name
-
-            if "acq-dwi" in filename:
-                # DWI fieldmap -> find DWI targets
-                target_files = _find_dwi_targets(participant_dir)
-                acq_type = "DWI"
-            elif "acq-func" in filename:
-                # Functional fieldmap -> find all BOLD targets
-                target_files = _find_func_targets(participant_dir)
-                acq_type = "functional"
-            else:
-                results["errors"].append(f"Unknown acquisition type in {filename}")
-                continue
-
-            if not target_files:
-                results["errors"].append(f"No target files found for {filename}")
-                continue
-
-            # Build IntendedFor paths (relative to session or participant directory)
-            intended_for_paths = [
-                _build_intended_for_path(target, participant_dir, session)
-                for target in target_files
-            ]
-
-            # Update JSON file
-            if not dry_run:
-                success = _update_json_sidecar(fmap_json, intended_for_paths)
-                if success:
-                    results["updated_files"].append(
-                        {
-                            "file": str(fmap_json.name),
-                            "type": acq_type,
-                            "targets": intended_for_paths,
-                        }
-                    )
-                else:
-                    results["errors"].append(f"Failed to update {filename}")
-            else:
-                results["updated_files"].append(
-                    {
-                        "file": str(fmap_json.name),
-                        "type": acq_type,
-                        "targets": intended_for_paths,
-                        "note": "Dry run - not modified",
-                    }
-                )
-
-        except Exception as e:
-            results["errors"].append(f"Error processing {fmap_json.name}: {e}")
-            results["success"] = False
+        _process_single_fmap_json(fmap_json, participant_dir, session, dry_run, results)
 
     return results
 
