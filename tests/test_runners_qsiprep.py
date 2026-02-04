@@ -3,9 +3,11 @@
 from unittest.mock import patch
 
 import pytest
-
 from voxelops.exceptions import InputValidationError
-from voxelops.runners.qsiprep import run_qsiprep
+from voxelops.runners.qsiprep import (
+    _build_qsiprep_docker_command,
+    run_qsiprep,
+)
 from voxelops.schemas.qsiprep import QSIPrepDefaults, QSIPrepInputs
 
 
@@ -117,7 +119,9 @@ class TestDockerCommandFlags:
     @patch("voxelops.runners.qsiprep.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsiprep.os.getgid", return_value=1000)
-    def test_fs_license_mount(self, _gid, _uid, mock_rd, mock_bids_dir, mock_fs_license):
+    def test_fs_license_mount(
+        self, _gid, _uid, mock_rd, mock_bids_dir, mock_fs_license
+    ):
         inputs = QSIPrepInputs(bids_dir=mock_bids_dir, participant="01")
         cfg = QSIPrepDefaults(fs_license=mock_fs_license)
         run_qsiprep(inputs, config=cfg)
@@ -128,7 +132,9 @@ class TestDockerCommandFlags:
     @patch("voxelops.runners.qsiprep.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsiprep.os.getgid", return_value=1000)
-    def test_bids_filters_mount(self, _gid, _uid, mock_rd, mock_bids_dir, mock_bids_filters):
+    def test_bids_filters_mount(
+        self, _gid, _uid, mock_rd, mock_bids_dir, mock_bids_filters
+    ):
         inputs = QSIPrepInputs(
             bids_dir=mock_bids_dir, participant="01", bids_filters=mock_bids_filters
         )
@@ -185,3 +191,118 @@ class TestDockerCommandFlags:
         assert "config" in result
         assert "expected_outputs" in result
         assert result["expected_outputs"].participant_dir.name == "sub-01"
+
+
+class TestQSIPrepHelpers:
+    @pytest.fixture
+    def mock_qsiprep_inputs(self, tmp_path):
+        bids_dir = tmp_path / "bids"
+        bids_dir.mkdir()
+        return QSIPrepInputs(bids_dir=bids_dir, participant="01")
+
+    @pytest.fixture
+    def mock_qsiprep_config(self, tmp_path):
+        fs_license = tmp_path / "fs_license.txt"
+        fs_license.touch()
+        return QSIPrepDefaults(fs_license=fs_license)
+
+    @pytest.fixture
+    def mock_output_work_dirs(self, tmp_path):
+        output_dir = tmp_path / "derivatives"
+        work_dir = tmp_path / "work"
+        output_dir.mkdir()
+        work_dir.mkdir()
+        return output_dir, work_dir
+
+    @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsiprep.os.getgid", return_value=1000)
+    def test_build_qsiprep_docker_command_basic(
+        self,
+        mock_gid,
+        mock_uid,
+        mock_qsiprep_inputs,
+        mock_qsiprep_config,
+        mock_output_work_dirs,
+    ):
+        output_dir, work_dir = mock_output_work_dirs
+        inputs = mock_qsiprep_inputs
+        config = mock_qsiprep_config
+
+        cmd = _build_qsiprep_docker_command(inputs, config, output_dir, work_dir)
+
+        expected_cmd_parts = [
+            "docker",
+            "run",
+            "-ti",
+            "--rm",
+            "--user",
+            "1000:1000",
+            "-v",
+            f"{inputs.bids_dir}:/data:ro",
+            "-v",
+            f"{output_dir}:/out",
+            "-v",
+            f"{work_dir}:/work",
+            "-v",
+            f"{config.fs_license}:/license.txt:ro",  # From config
+            config.docker_image,
+            "/data",
+            "/out",
+            "participant",
+            "--participant-label",
+            inputs.participant,
+            "--output-resolution",
+            str(config.output_resolution),
+            "--nprocs",
+            str(config.nprocs),
+            "--mem-mb",
+            str(config.mem_mb),
+            "--work-dir",
+            "/work",
+            "--anatomical-template",
+            "MNI152NLin2009cAsym",  # Default
+            "--subject-anatomical-reference",
+            "unbiased",  # Default
+            "--fs-license-file",
+            "/license.txt",
+        ]
+
+        for part in expected_cmd_parts:
+            assert part in cmd
+
+        assert "--longitudinal" not in cmd
+        assert "--skip-bids-validation" not in cmd
+        assert "--bids-filter-file" not in cmd
+
+    @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsiprep.os.getgid", return_value=1000)
+    def test_build_qsiprep_docker_command_with_optional_flags(
+        self,
+        mock_gid,
+        mock_uid,
+        mock_qsiprep_inputs,
+        mock_qsiprep_config,
+        mock_output_work_dirs,
+        tmp_path,
+    ):
+        output_dir, work_dir = mock_output_work_dirs
+        inputs = mock_qsiprep_inputs
+        config = mock_qsiprep_config
+
+        bids_filters = tmp_path / "bids_filters.json"
+        bids_filters.touch()
+        inputs.bids_filters = bids_filters
+        config.longitudinal = True
+        config.skip_bids_validation = True
+        config.anatomical_template = ["MNI152NLin6Asym", "fsLR"]  # Override default
+
+        cmd = _build_qsiprep_docker_command(inputs, config, output_dir, work_dir)
+
+        assert "--longitudinal" in cmd
+        assert "--skip-bids-validation" in cmd
+        assert "--bids-filter-file" in cmd
+        assert "-v" in cmd
+        assert f"{bids_filters}:/bids_filters.json:ro" in cmd
+        assert cmd.count("--anatomical-template") == 2
+        assert "MNI152NLin6Asym" in cmd
+        assert "fsLR" in cmd

@@ -3,9 +3,12 @@
 from unittest.mock import patch
 
 import pytest
-
 from voxelops.exceptions import InputValidationError
-from voxelops.runners.heudiconv import run_heudiconv
+from voxelops.runners.heudiconv import (
+    _build_heudiconv_docker_command,
+    _handle_heudiconv_post_processing,
+    run_heudiconv,
+)
 from voxelops.schemas.heudiconv import (
     HeudiconvDefaults,
     HeudiconvInputs,
@@ -17,12 +20,15 @@ def _make_inputs(tmp_path, *, session=None, output_dir=None):
     dicom_dir.mkdir(exist_ok=True)
     heuristic = tmp_path / "heuristic.py"
     heuristic.write_text("# stub\n")
-    return HeudiconvInputs(
-        dicom_dir=dicom_dir,
-        participant="01",
-        session=session,
-        output_dir=output_dir,
-    ), heuristic
+    return (
+        HeudiconvInputs(
+            dicom_dir=dicom_dir,
+            participant="01",
+            session=session,
+            output_dir=output_dir,
+        ),
+        heuristic,
+    )
 
 
 def _docker_ok():
@@ -86,9 +92,7 @@ class TestConfig:
 
 class TestValidation:
     def test_missing_dicom_dir(self, tmp_path):
-        inputs = HeudiconvInputs(
-            dicom_dir=tmp_path / "nope", participant="01"
-        )
+        inputs = HeudiconvInputs(dicom_dir=tmp_path / "nope", participant="01")
         with pytest.raises(InputValidationError, match="DICOM directory not found"):
             run_heudiconv(inputs, heuristic=tmp_path / "h.py")
 
@@ -157,8 +161,8 @@ class TestDockerCommandFlags:
         inputs, heuristic = _make_inputs(tmp_path)
         run_heudiconv(inputs, heuristic=heuristic, overwrite=True)
         cmd = mock_rd.call_args.kwargs["cmd"]
-        # Note: overwrite appears twice (lines 118-119 and 130-131)
-        assert cmd.count("--overwrite") == 2
+        # Overwrite flag should appear exactly once
+        assert cmd.count("--overwrite") == 1
 
     @patch("voxelops.runners.heudiconv.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.heudiconv.post_process_heudiconv_output")
@@ -209,9 +213,7 @@ class TestDockerCommandFlags:
     @patch("voxelops.runners.heudiconv.os.getgid", return_value=1000)
     def test_bids_validator_false(self, _gid, _uid, _pp, mock_rd, tmp_path):
         inputs, heuristic = _make_inputs(tmp_path)
-        run_heudiconv(
-            inputs, heuristic=heuristic, bids_validator=False, bids=None
-        )
+        run_heudiconv(inputs, heuristic=heuristic, bids_validator=False, bids=None)
         cmd = mock_rd.call_args.kwargs["cmd"]
         assert "--bids" not in cmd
 
@@ -275,3 +277,192 @@ class TestPostProcessing:
         inputs, heuristic = _make_inputs(tmp_path)
         _ = run_heudiconv(inputs, heuristic=heuristic)
         mock_pp.assert_not_called()
+
+
+# -- Helper Functions --------------------------------------------------------
+
+
+class TestHeudiconvHelpers:
+    @patch("voxelops.runners.heudiconv.os.getuid", return_value=1000)
+    @patch("voxelops.runners.heudiconv.os.getgid", return_value=1000)
+    def test_build_heudiconv_docker_command_basic(self, mock_gid, mock_uid, tmp_path):
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+
+        cmd = _build_heudiconv_docker_command(inputs, config, output_dir)
+
+        expected_cmd_start = [
+            "docker",
+            "run",
+            "--rm",
+            "--user",
+            "1000:1000",
+            "-v",
+            f"{inputs.dicom_dir}:/dicom:ro",
+            "-v",
+            f"{output_dir}:/output",
+            "-v",
+            f"{config.heuristic}:/heuristic.py:ro",
+            config.docker_image,
+            "--files",
+            "/dicom",
+            "--outdir",
+            "/output",
+            "--subjects",
+            inputs.participant,
+            "--converter",
+            config.converter,
+            "--heuristic",
+            "/heuristic.py",
+        ]
+        assert cmd[: len(expected_cmd_start)] == expected_cmd_start
+        assert "--ses" not in cmd
+        assert "--overwrite" not in cmd  # default false
+        assert "--bids" in cmd  # default true
+        assert "--grouping" in cmd  # default true
+
+    @patch("voxelops.runners.heudiconv.os.getuid", return_value=1000)
+    @patch("voxelops.runners.heudiconv.os.getgid", return_value=1000)
+    def test_build_heudiconv_docker_command_with_session(
+        self, mock_gid, mock_uid, tmp_path
+    ):
+        inputs, heuristic = _make_inputs(tmp_path, session="pre")
+        config = HeudiconvDefaults(heuristic=heuristic)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+
+        cmd = _build_heudiconv_docker_command(inputs, config, output_dir)
+        assert "--ses" in cmd
+        assert "pre" in cmd
+
+    @patch("voxelops.runners.heudiconv.os.getuid", return_value=1000)
+    @patch("voxelops.runners.heudiconv.os.getgid", return_value=1000)
+    def test_build_heudiconv_docker_command_with_overwrite_true(
+        self, mock_gid, mock_uid, tmp_path
+    ):
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, overwrite=True)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+
+        cmd = _build_heudiconv_docker_command(inputs, config, output_dir)
+        assert "--overwrite" in cmd
+        # Ensure it only appears once
+        assert cmd.count("--overwrite") == 1
+
+    @patch("voxelops.runners.heudiconv.os.getuid", return_value=1000)
+    @patch("voxelops.runners.heudiconv.os.getgid", return_value=1000)
+    def test_build_heudiconv_docker_command_with_overwrite_false(
+        self, mock_gid, mock_uid, tmp_path
+    ):
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, overwrite=False)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+
+        cmd = _build_heudiconv_docker_command(inputs, config, output_dir)
+        assert "--overwrite" not in cmd
+
+    @patch("voxelops.runners.heudiconv.os.getuid", return_value=1000)
+    @patch("voxelops.runners.heudiconv.os.getgid", return_value=1000)
+    def test_build_heudiconv_docker_command_bids_validator_false(
+        self, mock_gid, mock_uid, tmp_path
+    ):
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, bids_validator=False, bids=None)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+
+        cmd = _build_heudiconv_docker_command(inputs, config, output_dir)
+        assert "--bids" not in cmd
+
+    @patch("voxelops.runners.heudiconv.post_process_heudiconv_output")
+    def test_handle_heudiconv_post_processing_success(
+        self, mock_post_process, tmp_path
+    ):
+        mock_post_process.return_value = {"success": True}
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, post_process=True)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+        result = {"success": True}
+
+        updated_result = _handle_heudiconv_post_processing(
+            result, config, output_dir, inputs
+        )
+
+        mock_post_process.assert_called_once_with(
+            bids_dir=output_dir,
+            participant=inputs.participant,
+            session=inputs.session,
+            dry_run=config.post_process_dry_run,
+        )
+        assert updated_result["post_processing"]["success"] is True
+
+    @patch("voxelops.runners.heudiconv.post_process_heudiconv_output")
+    def test_handle_heudiconv_post_processing_warnings(
+        self, mock_post_process, tmp_path
+    ):
+        mock_post_process.return_value = {"success": False, "errors": ["warn1"]}
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, post_process=True)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+        result = {"success": True}
+
+        updated_result = _handle_heudiconv_post_processing(
+            result, config, output_dir, inputs
+        )
+        assert updated_result["post_processing"]["success"] is False
+        assert "warn1" in updated_result["post_processing"]["errors"]
+
+    @patch("voxelops.runners.heudiconv.post_process_heudiconv_output")
+    def test_handle_heudiconv_post_processing_exception(
+        self, mock_post_process, tmp_path
+    ):
+        mock_post_process.side_effect = RuntimeError("post-process boom")
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, post_process=True)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+        result = {"success": True}
+
+        updated_result = _handle_heudiconv_post_processing(
+            result, config, output_dir, inputs
+        )
+        assert updated_result["post_processing"]["success"] is False
+        assert "post-process boom" in updated_result["post_processing"]["error"]
+
+    @patch("voxelops.runners.heudiconv.post_process_heudiconv_output")
+    def test_handle_heudiconv_post_processing_disabled(
+        self, mock_post_process, tmp_path
+    ):
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, post_process=False)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+        result = {"success": True}
+
+        updated_result = _handle_heudiconv_post_processing(
+            result, config, output_dir, inputs
+        )
+        mock_post_process.assert_not_called()
+        assert "post_processing" not in updated_result
+
+    @patch("voxelops.runners.heudiconv.post_process_heudiconv_output")
+    def test_handle_heudiconv_post_processing_skipped_on_run_docker_failure(
+        self, mock_post_process, tmp_path
+    ):
+        inputs, heuristic = _make_inputs(tmp_path)
+        config = HeudiconvDefaults(heuristic=heuristic, post_process=True)
+        output_dir = tmp_path / "bids"
+        output_dir.mkdir()
+        result = {"success": False}  # Simulate run_docker failure
+
+        updated_result = _handle_heudiconv_post_processing(
+            result, config, output_dir, inputs
+        )
+        mock_post_process.assert_not_called()
+        assert "post_processing" not in updated_result

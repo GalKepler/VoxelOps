@@ -54,3 +54,4 @@ logs/
 heuristic.py
 bids_filters.json
 qsirecon_spec.yaml
+validation_framework
