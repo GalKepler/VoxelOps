@@ -34,6 +34,9 @@ class MockExpectedOutputs:
     qsiprep_dir: Optional[Path] = None
     qsirecon_dir: Optional[Path] = None
     output_dir: Optional[Path] = None
+    html_report: Optional[Path] = None
+    workflow_reports: Optional[dict] = None
+    workflow_dirs: Optional[dict] = None
 
 
 class TestHeudiConvValidator:
@@ -120,7 +123,9 @@ class TestQSIPrepValidator:
         validator = QSIPrepValidator()
         assert validator.procedure_name == "qsiprep"
         assert len(validator.pre_rules) == 6
-        assert len(validator.post_rules) == 2
+        assert (
+            len(validator.post_rules) == 3
+        )  # Added ExpectedOutputsExistRule for HTML report
 
     def test_pre_validation_success_with_sessions(self, tmp_path):
         """Test successful pre-validation with session-based BIDS dataset."""
@@ -205,7 +210,8 @@ class TestQSIPrepValidator:
         # Setup test environment
         qsiprep_dir = tmp_path / "qsiprep"
         qsiprep_dir.mkdir()
-        (qsiprep_dir / "sub-01.html").touch()
+        html_report = qsiprep_dir / "sub-01.html"
+        html_report.touch()
 
         participant_dir = qsiprep_dir / "sub-01"
         dwi_dir = participant_dir / "dwi"
@@ -217,14 +223,16 @@ class TestQSIPrepValidator:
             procedure_name="qsiprep",
             participant="01",
             expected_outputs=MockExpectedOutputs(
-                qsiprep_dir=qsiprep_dir, participant_dir=participant_dir
+                qsiprep_dir=qsiprep_dir,
+                participant_dir=participant_dir,
+                html_report=html_report,
             ),
         )
 
         report = validator.validate_post(context)
 
         assert report.passed is True
-        assert len(report.results) == 2
+        assert len(report.results) == 3  # qsiprep_dir, participant_dir, html_report
 
 
 class TestQSIReconValidator:
@@ -235,7 +243,9 @@ class TestQSIReconValidator:
         validator = QSIReconValidator()
         assert validator.procedure_name == "qsirecon"
         assert len(validator.pre_rules) == 4
-        assert len(validator.post_rules) == 3
+        assert (
+            len(validator.post_rules) == 4
+        )  # Added back participant_dir and workflow_reports checks
 
     def test_pre_validation_success(self, tmp_path):
         """Test successful pre-validation."""
@@ -247,7 +257,7 @@ class TestQSIReconValidator:
 
         # Create required files
         (dwi_dir / "sub-01_desc-preproc_dwi.nii.gz").touch()
-        (dwi_dir / "sub-01_confounds.tsv").touch()
+        (dwi_dir / "sub-01-image_qc.tsv").touch()
 
         validator = QSIReconValidator()
         context = ValidationContext(
@@ -270,12 +280,18 @@ class TestQSIReconValidator:
         output_dir.mkdir(parents=True)
         (output_dir / "sub-01_recon.nii.gz").touch()
 
+        # Create workflow reports for the new ExpectedOutputsExistRule
+        workflow_reports = {"workflow1": {"session1": tmp_path / "report1.html"}}
+        (tmp_path / "report1.html").touch()
+
         validator = QSIReconValidator()
         context = ValidationContext(
             procedure_name="qsirecon",
             participant="01",
             expected_outputs=MockExpectedOutputs(
-                qsirecon_dir=qsirecon_dir, participant_dir=participant_dir
+                qsirecon_dir=qsirecon_dir,
+                participant_dir=participant_dir,
+                workflow_reports=workflow_reports,
             ),
         )
 
@@ -292,15 +308,21 @@ class TestQSIParcValidator:
         validator = QSIParcValidator()
         assert validator.procedure_name == "qsiparc"
         assert len(validator.pre_rules) == 3
-        assert len(validator.post_rules) == 2
+        assert len(validator.post_rules) == 3  # output_dir, workflow_dirs, TSV files
 
     def test_pre_validation_success(self, tmp_path):
         """Test successful pre-validation."""
-        # Setup test environment
+        # Setup test environment with proper QSIRecon derivative structure
         qsirecon_dir = tmp_path / "qsirecon"
         sub_dir = qsirecon_dir / "sub-01"
         sub_dir.mkdir(parents=True)
-        (sub_dir / "sub-01_recon.nii.gz").touch()
+
+        # Create QSIRecon derivative outputs as expected by the validator
+        workflow_dir = (
+            qsirecon_dir / "derivatives" / "qsirecon-test_workflow" / "sub-01" / "dwi"
+        )
+        workflow_dir.mkdir(parents=True)
+        (workflow_dir / "sub-01_recon.nii.gz").touch()
 
         validator = QSIParcValidator()
         context = ValidationContext(
@@ -319,13 +341,23 @@ class TestQSIParcValidator:
         # Setup test environment
         output_dir = tmp_path / "parcellation"
         output_dir.mkdir()
-        (output_dir / "sub-01_parcellated.csv").touch()
+
+        # Create workflow directory structure and TSV files
+        workflow_dwi_dir = output_dir / "qsirecon-test_workflow" / "sub-01" / "dwi"
+        workflow_dwi_dir.mkdir(parents=True)
+        (workflow_dwi_dir / "sub-01_parcellated.tsv").touch()
+
+        # Create workflow_dirs for ExpectedOutputsExistRule
+        workflow_dirs = {"test_workflow": {None: workflow_dwi_dir}}
 
         validator = QSIParcValidator()
         context = ValidationContext(
             procedure_name="qsiparc",
             participant="01",
-            expected_outputs=MockExpectedOutputs(output_dir=output_dir),
+            expected_outputs=MockExpectedOutputs(
+                output_dir=output_dir,
+                workflow_dirs=workflow_dirs,
+            ),
         )
 
         report = validator.validate_post(context)

@@ -165,11 +165,9 @@ def run_qsirecon(
         for name in inputs.datasets.keys():
             addition = f"{name}=/datasets/{name}"
             cmd.extend([addition])
-    # Atlases
+    # Atlases (optional - some recon specs may not require them)
     if inputs.atlases:
         cmd.extend(["--atlases", *inputs.atlases])
-    else:
-        raise ValueError("At least one atlas must be specified for connectivity.")
     # Optional arguments
     if inputs.recon_spec and inputs.recon_spec.exists():
         cmd.extend(["--recon-spec", "/recon_spec.yaml"])
