@@ -3,6 +3,7 @@
 from unittest.mock import patch
 
 import pytest
+
 from voxelops.exceptions import InputValidationError
 from voxelops.runners.heudiconv import (
     _build_heudiconv_docker_command,

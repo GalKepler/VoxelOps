@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
+
 from voxelops.procedures import ProcedureResult, run_procedure
 from voxelops.validation.base import ValidationReport, ValidationResult
 
