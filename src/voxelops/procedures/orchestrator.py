@@ -100,13 +100,12 @@ def run_procedure(
         participant=participant,
         session=session,
     )
-
     audit.log(
         AuditEventType.PROCEDURE_START,
         {
             "inputs": _inputs_to_dict(inputs),
             "config": _config_to_dict(config),
-            "overrides": overrides,
+            "overrides": _serialize_for_json(overrides),
         },
     )
 
@@ -208,6 +207,29 @@ def run_procedure(
     )
 
 
+def _serialize_for_json(obj: Any) -> Any:
+    """Recursively convert non-JSON-serializable objects to strings.
+
+    Parameters
+    ----------
+    obj : Any
+        Object to serialize.
+
+    Returns
+    -------
+    Any
+        JSON-serializable version of the object.
+    """
+    if isinstance(obj, Path):
+        return str(obj)
+    elif isinstance(obj, dict):
+        return {k: _serialize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_serialize_for_json(item) for item in obj]
+    else:
+        return obj
+
+
 def _get_default_log_dir(inputs) -> Path:
     """Get default log directory from inputs.
 
@@ -243,7 +265,7 @@ def _inputs_to_dict(inputs) -> Dict[str, Any]:
     if inputs is None:
         return {}
     if hasattr(inputs, "model_dump"):
-        return inputs.model_dump()
+        return inputs.model_dump(mode="json")
     if hasattr(inputs, "__dict__"):
         return {k: str(v) for k, v in inputs.__dict__.items()}
     return {"inputs": str(inputs)}
@@ -265,7 +287,7 @@ def _config_to_dict(config) -> Dict[str, Any]:
     if config is None:
         return {}
     if hasattr(config, "model_dump"):
-        return config.model_dump()
+        return config.model_dump(mode="json")
     if hasattr(config, "__dict__"):
         return {k: str(v) for k, v in config.__dict__.items()}
     return {"config": str(config)}

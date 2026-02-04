@@ -3,10 +3,34 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
 
 if TYPE_CHECKING:
     from voxelops.validation.context import ValidationContext
+
+
+def _serialize_for_json(obj: Any) -> Any:
+    """Recursively convert non-JSON-serializable objects to strings.
+
+    Parameters
+    ----------
+    obj : Any
+        Object to serialize.
+
+    Returns
+    -------
+    Any
+        JSON-serializable version of the object.
+    """
+    if isinstance(obj, Path):
+        return str(obj)
+    elif isinstance(obj, dict):
+        return {k: _serialize_for_json(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        return [_serialize_for_json(item) for item in obj]
+    else:
+        return obj
 
 
 @dataclass
@@ -33,7 +57,7 @@ class ValidationResult:
             "passed": self.passed,
             "severity": self.severity,
             "message": self.message,
-            "details": self.details,
+            "details": _serialize_for_json(self.details),
             "timestamp": self.timestamp.isoformat(),
         }
 
