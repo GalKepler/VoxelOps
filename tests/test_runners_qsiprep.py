@@ -305,3 +305,76 @@ class TestQSIPrepHelpers:
         assert cmd.count("--anatomical-template") == 2
         assert "MNI152NLin6Asym" in cmd
         assert "fsLR" in cmd
+
+
+# -- Skip if outputs exist ----------------------------------------------------
+
+
+class TestSkipIfOutputsExist:
+    @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsiprep.os.getgid", return_value=1000)
+    def test_skips_when_outputs_exist_and_not_forced(self, _gid, _uid, tmp_path):
+        """Test that execution is skipped if outputs exist and force=False."""
+        bids_dir = tmp_path / "bids"
+        (bids_dir / "sub-01").mkdir(parents=True)
+
+        # Create output directories and files
+        output_dir = tmp_path / "derivatives"
+        qsiprep_dir = output_dir / "qsiprep"
+        participant_dir = qsiprep_dir / "sub-01"
+        participant_dir.mkdir(parents=True)
+        html_report = qsiprep_dir / "sub-01.html"
+        html_report.touch()
+
+        inputs = QSIPrepInputs(
+            bids_dir=bids_dir, participant="01", output_dir=output_dir
+        )
+
+        result = run_qsiprep(inputs, force=False)
+
+        assert result["skipped"] is True
+        assert result["reason"] == "outputs_exist"
+        assert result["success"] is True
+        assert "expected_outputs" in result
+
+    @patch("voxelops.runners.qsiprep.run_docker", return_value=_docker_ok())
+    @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsiprep.os.getgid", return_value=1000)
+    def test_runs_when_outputs_exist_but_forced(self, _gid, _uid, mock_rd, tmp_path):
+        """Test that execution proceeds if force=True even when outputs exist."""
+        bids_dir = tmp_path / "bids"
+        (bids_dir / "sub-01").mkdir(parents=True)
+
+        # Create output directories and files
+        output_dir = tmp_path / "derivatives"
+        qsiprep_dir = output_dir / "qsiprep"
+        participant_dir = qsiprep_dir / "sub-01"
+        participant_dir.mkdir(parents=True)
+        html_report = qsiprep_dir / "sub-01.html"
+        html_report.touch()
+
+        inputs = QSIPrepInputs(
+            bids_dir=bids_dir, participant="01", output_dir=output_dir
+        )
+
+        result = run_qsiprep(inputs, force=True)
+
+        assert result["skipped"] is False
+        assert result["success"] is True
+        mock_rd.assert_called_once()
+
+    @patch("voxelops.runners.qsiprep.run_docker", return_value=_docker_ok())
+    @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsiprep.os.getgid", return_value=1000)
+    def test_runs_when_outputs_missing(self, _gid, _uid, mock_rd, tmp_path):
+        """Test that execution proceeds if outputs don't exist."""
+        bids_dir = tmp_path / "bids"
+        (bids_dir / "sub-01").mkdir(parents=True)
+
+        inputs = QSIPrepInputs(bids_dir=bids_dir, participant="01")
+
+        result = run_qsiprep(inputs)
+
+        assert result["skipped"] is False
+        assert result["success"] is True
+        mock_rd.assert_called_once()
