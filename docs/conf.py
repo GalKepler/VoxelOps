@@ -15,8 +15,8 @@ project = "VoxelOps"
 copyright = "2026, Gal Kepler"
 author = "Gal Kepler"
 
-version = "2.0.0"
-release = "2.0.0"
+version = "0.1.0"
+release = "0.1.0"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

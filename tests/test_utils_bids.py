@@ -115,7 +115,8 @@ class TestPostProcessHeudiconvOutput:
         ):
             result = post_process_heudiconv_output(bids, "01")
         assert result["success"] is False
-        assert any("IntendedFor" in e for e in result["errors"])
+        print(result["errors"])
+        assert any("Intended" in e for e in result["errors"])
 
     def test_exception_in_cleanup(self, tmp_path):
         bids, pdir = _make_participant(tmp_path)

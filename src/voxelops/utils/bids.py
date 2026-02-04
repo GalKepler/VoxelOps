@@ -22,7 +22,9 @@ def _run_post_processing_step(
             results["errors"].extend(step_result.get("errors", []))
             results["success"] = False
     except Exception as e:
-        results["errors"].append(f"{step_name.capitalize()} failed: {e}")
+        results["errors"].append(
+            f"{step_name.replace('_', ' ').capitalize()} failed: {e}"
+        )
         results["success"] = False
 
 
