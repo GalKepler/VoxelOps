@@ -1,14 +1,21 @@
 VoxelOps
 ========
 
+.. image:: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml
+   :alt: CI
+.. image:: https://codecov.io/gh/yalab-devops/VoxelOps/branch/main/graph/badge.svg?token=YOUR_CODECOV_TOKEN
+   :target: https://codecov.io/gh/yalab-devops/VoxelOps
+   :alt: codecov
+.. image:: https://app.codacy.com/project/badge/Grade/YOUR_CODACY_PROJECT_ID
+   :target: https://www.codacy.com/gh/yalab-devops/VoxelOps/dashboard?utm_source=github.com&utm_medium=referral&utm_content=yalab-devops/VoxelOps&utm_campaign=Badge_Grade
+   :alt: Codacy Badge
+.. image:: https://badge.fury.io/py/voxelops.svg
+   :target: https://badge.fury.io/py/voxelops
+   :alt: PyPI version
 .. image:: https://readthedocs.org/projects/voxelops/badge/?version=latest
    :target: https://voxelops.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
-
-.. image:: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml/badge.svg
-   :target: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml
-   :alt: CI Status
-
 .. image:: https://img.shields.io/badge/License-MIT-blue.svg
    :target: https://opensource.org/licenses/MIT
    :alt: License: MIT

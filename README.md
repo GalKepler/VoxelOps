@@ -2,8 +2,11 @@
 
 **Clean, simple neuroimaging pipeline automation for brain banks.**
 
+[![CI](https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml/badge.svg)](https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/yalab-devops/VoxelOps/branch/main/graph/badge.svg?token=YOUR_CODECOV_TOKEN)](https://codecov.io/gh/yalab-devops/VoxelOps)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/YOUR_CODACY_PROJECT_ID)](https://www.codacy.com/gh/yalab-devops/VoxelOps/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=yalab-devops/VoxelOps&amp;utm_campaign=Badge_Grade)
+[![PyPI version](https://badge.fury.io/py/voxelops.svg)](https://badge.fury.io/py/voxelops)
 [![Documentation Status](https://readthedocs.org/projects/voxelops/badge/?version=latest)](https://voxelops.readthedocs.io/en/latest/?badge=latest)
-[![CI Status](https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml/badge.svg)](https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
 ---

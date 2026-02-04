@@ -4,17 +4,26 @@ VoxelOps Documentation
 .. image:: images/Gemini_Generated_Image_m9bi47m9bi47m9bi.png
    :alt: VoxelOps Logo
    :align: center
-   :width: 200px
-
-.. image:: https://readthedocs.org/projects/voxelops/badge/?version=latest
-   :target: https://voxelops.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
+   :width: 500px
 
 .. image:: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml/badge.svg
    :target: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml
-   :alt: CI Status
-
-|pypi| |license|
+   :alt: CI
+.. image:: https://codecov.io/gh/yalab-devops/VoxelOps/branch/main/graph/badge.svg?token=YOUR_CODECOV_TOKEN
+   :target: https://codecov.io/gh/yalab-devops/VoxelOps
+   :alt: codecov
+.. image:: https://app.codacy.com/project/badge/Grade/YOUR_CODACY_PROJECT_ID
+   :target: https://www.codacy.com/gh/yalab-devops/VoxelOps/dashboard?utm_source=github.com&utm_medium=referral&utm_content=yalab-devops/VoxelOps&utm_campaign=Badge_Grade
+   :alt: Codacy Badge
+.. image:: https://badge.fury.io/py/voxelops.svg
+   :target: https://badge.fury.io/py/voxelops
+   :alt: PyPI version
+.. image:: https://readthedocs.org/projects/voxelops/badge/?version=latest
+   :target: https://voxelops.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+.. image:: https://img.shields.io/badge/License-MIT-blue.svg
+   :target: https://opensource.org/licenses/MIT
+   :alt: License: MIT
 
 **Clean, simple neuroimaging pipeline automation for brain banks.**
 
@@ -97,9 +106,4 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. |pypi| image:: https://img.shields.io/pypi/v/voxelops.svg
-   :target: https://pypi.python.org/pypi/voxelops
-   :alt: PyPI
-.. |license| image:: https://img.shields.io/pypi/l/voxelops.svg
-   :target: https://github.com/yalab-devops/VoxelOps/blob/main/LICENSE
-   :alt: License
+
