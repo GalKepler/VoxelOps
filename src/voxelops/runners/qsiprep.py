@@ -29,7 +29,6 @@ def _build_qsiprep_docker_command(
     cmd = [
         "docker",
         "run",
-        "-ti",
         "--rm",
         "--user",
         f"{uid}:{gid}",

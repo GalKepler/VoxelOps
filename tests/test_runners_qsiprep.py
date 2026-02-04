@@ -233,7 +233,6 @@ class TestQSIPrepHelpers:
         expected_cmd_parts = [
             "docker",
             "run",
-            "-ti",
             "--rm",
             "--user",
             "1000:1000",
