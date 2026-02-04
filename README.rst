@@ -1,30 +1,75 @@
 VoxelOps
 ========
 
-.. image:: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml/badge.svg
-   :target: https://github.com/yalab-devops/VoxelOps/actions/workflows/ci.yml
-   :alt: CI
-.. image:: https://codecov.io/gh/yalab-devops/VoxelOps/branch/main/graph/badge.svg?token=YOUR_CODECOV_TOKEN
-   :target: https://codecov.io/gh/yalab-devops/VoxelOps
-   :alt: codecov
-.. image:: https://app.codacy.com/project/badge/Grade/YOUR_CODACY_PROJECT_ID
-   :target: https://www.codacy.com/gh/yalab-devops/VoxelOps/dashboard?utm_source=github.com&utm_medium=referral&utm_content=yalab-devops/VoxelOps&utm_campaign=Badge_Grade
-   :alt: Codacy Badge
-.. image:: https://badge.fury.io/py/voxelops.svg
-   :target: https://badge.fury.io/py/voxelops
-   :alt: PyPI version
-.. image:: https://readthedocs.org/projects/voxelops/badge/?version=latest
-   :target: https://voxelops.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
-.. image:: https://img.shields.io/badge/License-MIT-blue.svg
-   :target: https://opensource.org/licenses/MIT
-   :alt: License: MIT
-
+.. image:: https://github.com/GalKepler/VoxelOps/docs/images/Gemini_Generated_Image_m9bi47m9bi47m9bi.png?raw=true
+   :alt: VoxelOps Logo
+   :width: 400px
 
 Clean, simple neuroimaging pipeline automation for brain banks.
 ---------------------------------------------------------------
 
 Brain banks need to process neuroimaging data **consistently**, **reproducibly**, and **auditably**. VoxelOps makes that simple by wrapping Docker-based neuroimaging tools into clean Python functions that return plain dicts -- ready for your database, your logs, and your peace of mind.
+
+========
+Overview
+========
+
+.. list-table::
+    :stub-columns: 1
+
+    * - docs
+      - |docs|
+    * - tests, CI & coverage
+      - |github-actions| |codecov| |codacy|
+    * - version
+      - |pypi| |python|
+    * - styling
+      - |black| |isort| |flake8| |pre-commit|
+    * - license
+      - |license|
+
+.. |docs| image:: https://readthedocs.org/projects/voxelops/badge/?version=latest
+   :target: https://voxelops.readthedocs.io/en/latest/?badge=latest
+   :alt: Documentation Status
+
+.. |github-actions| image:: https://github.com/GalKepler/VoxelOps/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/GalKepler/VoxelOps/actions/workflows/ci.yml
+   :alt: CI
+
+.. |codecov| image:: https://codecov.io/gh/GalKepler/VoxelOps/graph/badge.svg?token=GBOLQOB5VI 
+   :target: https://codecov.io/gh/GalKepler/VoxelOps
+   :alt: codecov
+
+.. |codacy| image:: https://app.codacy.com/project/badge/Grade/YOUR_CODACY_PROJECT_ID
+   :target: https://www.codacy.com/gh/GalKepler/VoxelOps/dashboard?utm_source=github.com&utm_medium=referral&utm_content=GalKepler/VoxelOps&utm_campaign=Badge_Grade
+   :alt: Codacy Badge
+
+.. |pypi| image:: https://badge.fury.io/py/voxelops.svg
+   :target: https://badge.fury.io/py/voxelops
+   :alt: PyPI version
+
+.. |python| image:: https://img.shields.io/badge/python-3.10%2B-blue.svg
+   :target: https://www.python.org/downloads/
+   :alt: Python 3.10+
+
+.. |license| image:: https://img.shields.io/github/license/yalab-devops/yalab-procedures.svg
+        :target: https://opensource.org/license/mit
+        :alt: License
+
+.. |black| image:: https://img.shields.io/badge/formatter-black-000000.svg
+      :target: https://github.com/psf/black
+
+.. |isort| image:: https://img.shields.io/badge/imports-isort-%231674b1.svg
+        :target: https://pycqa.github.io/isort/
+
+.. |flake8| image:: https://img.shields.io/badge/style-flake8-000000.svg
+        :target: https://flake8.pycqa.org/en/latest/
+
+.. |pre-commit| image:: https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white
+        :target: https://github.com/pre-commit/pre-commit
+
+
+
 
 Features
 --------
