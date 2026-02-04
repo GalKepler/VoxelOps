@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from voxelops.validation.context import ValidationContext
 from voxelops.validation.rules.common import (
@@ -14,16 +13,16 @@ from voxelops.validation.rules.common import (
 
 @dataclass
 class MockInputs:
-    bids_dir: Optional[Path] = None
-    dicom_dir: Optional[Path] = None
-    fs_license: Optional[Path] = None
-    output_dir: Optional[Path] = None
-    qsiprep_dir: Optional[Path] = None
+    bids_dir: Path | None = None
+    dicom_dir: Path | None = None
+    fs_license: Path | None = None
+    output_dir: Path | None = None
+    qsiprep_dir: Path | None = None
 
 
 @dataclass
 class MockConfig:
-    fs_license: Optional[Path] = None
+    fs_license: Path | None = None
 
 
 class TestDirectoryExistsRule:
@@ -244,7 +243,7 @@ class TestParticipantExistsRule:
 class TestOutputDirectoryExistsRule:
     @dataclass
     class MockExpectedOutputs:
-        qsiprep_dir: Optional[Path] = None
+        qsiprep_dir: Path | None = None
 
     def test_passes_when_output_dir_exists(self, tmp_path):
         output_dir = tmp_path / "derivatives" / "qsiprep"

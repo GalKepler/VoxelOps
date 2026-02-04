@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Dict, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal, Optional
 
 if TYPE_CHECKING:
     from voxelops.validation.base import ValidationReport
@@ -26,7 +26,7 @@ class ProcedureResult:
     # Identification
     procedure: str
     participant: str
-    session: Optional[str]
+    session: str | None
     run_id: str
 
     # Overall status
@@ -39,20 +39,20 @@ class ProcedureResult:
 
     # Timestamps
     start_time: datetime
-    end_time: Optional[datetime] = None
+    end_time: datetime | None = None
 
     # Validation reports
     pre_validation: Optional["ValidationReport"] = None
     post_validation: Optional["ValidationReport"] = None
 
     # Execution details (from existing runner)
-    execution: Optional[Dict[str, Any]] = None
+    execution: dict[str, Any] | None = None
 
     # Audit trail
-    audit_log_file: Optional[str] = None
+    audit_log_file: str | None = None
 
     @property
-    def duration_seconds(self) -> Optional[float]:
+    def duration_seconds(self) -> float | None:
         """Get the total duration in seconds."""
         if self.end_time and self.start_time:
             return (self.end_time - self.start_time).total_seconds()
@@ -63,7 +63,7 @@ class ProcedureResult:
         """True if status is success."""
         return self.status == "success"
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dict for database storage."""
         return {
             "procedure": self.procedure,
@@ -85,7 +85,7 @@ class ProcedureResult:
             "audit_log_file": self.audit_log_file,
         }
 
-    def get_failure_reason(self) -> Optional[str]:
+    def get_failure_reason(self) -> str | None:
         """Get a human-readable failure reason.
 
         Returns

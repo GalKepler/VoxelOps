@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 
@@ -33,7 +33,7 @@ class QSIReconInputs:
 
     qsiprep_dir: Path
     participant: str
-    atlases: List[str] = field(
+    atlases: list[str] = field(
         default_factory=lambda: [
             "4S156Parcels",
             "4S256Parcels",
@@ -51,10 +51,10 @@ class QSIReconInputs:
             "Gordon333Ext",
         ]
     )
-    output_dir: Optional[Path] = None
-    work_dir: Optional[Path] = None
-    recon_spec: Optional[Path] = None
-    datasets: Optional[dict[str, Path]] = None
+    output_dir: Path | None = None
+    work_dir: Path | None = None
+    recon_spec: Path | None = None
+    datasets: dict[str, Path] | None = None
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -88,7 +88,7 @@ class QSIReconOutputs:
 
     qsirecon_dir: Path
     participant_dir: Path
-    workflow_reports: Dict[str, Dict[Optional[str], Path]]
+    workflow_reports: dict[str, dict[str | None, Path]]
     work_dir: Path
 
     def exist(self) -> bool:
@@ -111,7 +111,7 @@ class QSIReconOutputs:
 
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization.
 
         Returns
@@ -216,8 +216,8 @@ class QSIReconDefaults:
 
     nprocs: int = 8
     mem_mb: int = 16000
-    fs_subjects_dir: Optional[Path] = None
-    fs_license: Optional[Path] = None
+    fs_subjects_dir: Path | None = None
+    fs_license: Path | None = None
     docker_image: str = "pennlinc/qsirecon:latest"
     force: bool = False
 
@@ -229,7 +229,7 @@ class QSIReconDefaults:
             self.fs_license = Path(self.fs_license)
 
 
-def _discover_sessions(qsiprep_dir: Path, participant: str) -> List[str]:
+def _discover_sessions(qsiprep_dir: Path, participant: str) -> list[str]:
     """Discover session IDs from QSIPrep output directory.
 
     Parameters
@@ -262,7 +262,7 @@ def _discover_sessions(qsiprep_dir: Path, participant: str) -> List[str]:
         return []
 
 
-def _extract_workflows(recon_spec_path: Path) -> List[str]:
+def _extract_workflows(recon_spec_path: Path) -> list[str]:
     """Extract workflow suffixes from QSIRecon reconstruction spec YAML.
 
     QSIRecon creates derivative directories based on the qsirecon_suffix

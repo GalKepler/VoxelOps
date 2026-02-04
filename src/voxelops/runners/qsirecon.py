@@ -1,7 +1,7 @@
 """QSIRecon diffusion reconstruction runner."""
 
 import os
-from typing import Any, Dict, Optional
+from typing import Any
 
 from voxelops.runners._base import (
     run_docker,
@@ -16,8 +16,8 @@ from voxelops.schemas.qsirecon import (
 
 
 def run_qsirecon(
-    inputs: QSIReconInputs, config: Optional[QSIReconDefaults] = None, **overrides
-) -> Dict[str, Any]:
+    inputs: QSIReconInputs, config: QSIReconDefaults | None = None, **overrides
+) -> dict[str, Any]:
     """Run QSIRecon diffusion reconstruction and connectivity.
 
     Parameters

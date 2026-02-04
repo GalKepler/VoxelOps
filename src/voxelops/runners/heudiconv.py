@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from voxelops.exceptions import InputValidationError
 from voxelops.runners._base import run_docker, validate_input_dir
@@ -65,11 +65,11 @@ def _build_heudiconv_docker_command(
 
 
 def _handle_heudiconv_post_processing(
-    result: Dict[str, Any],
+    result: dict[str, Any],
     config: HeudiconvDefaults,
     output_dir: Path,
     inputs: HeudiconvInputs,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Handles post-processing steps for HeudiConv."""
     if result["success"] and config.post_process:
         print(f"\n{'='*80}")
@@ -100,8 +100,8 @@ def _handle_heudiconv_post_processing(
 
 
 def run_heudiconv(
-    inputs: HeudiconvInputs, config: Optional[HeudiconvDefaults] = None, **overrides
-) -> Dict[str, Any]:
+    inputs: HeudiconvInputs, config: HeudiconvDefaults | None = None, **overrides
+) -> dict[str, Any]:
     """Convert DICOM to BIDS using HeudiConv.
 
     Parameters

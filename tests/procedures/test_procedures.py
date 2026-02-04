@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
 from unittest.mock import Mock, patch
 
 import pytest
@@ -16,9 +15,9 @@ class MockInputs:
     """Mock inputs for testing."""
 
     participant: str
-    session: Optional[str] = None
-    bids_dir: Optional[Path] = None
-    output_dir: Optional[Path] = None
+    session: str | None = None
+    bids_dir: Path | None = None
+    output_dir: Path | None = None
 
 
 class TestProcedureResult:
@@ -261,11 +260,14 @@ class TestRunProcedure:
         )
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS",
-            {"heudiconv": mock_validator},
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"heudiconv": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+            ),
         ):
             # Run procedure
             result = run_procedure("heudiconv", inputs, log_dir=tmp_path / "logs")
@@ -306,10 +308,14 @@ class TestRunProcedure:
         )
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS", {"qsiprep": mock_validator}
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"qsiprep": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"qsiprep": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"qsiprep": mock_runner}
+            ),
         ):
             # Run procedure
             result = run_procedure("qsiprep", inputs, log_dir=tmp_path / "logs")
@@ -345,11 +351,14 @@ class TestRunProcedure:
         )
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS",
-            {"qsirecon": mock_validator},
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"qsirecon": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"qsirecon": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"qsirecon": mock_runner}
+            ),
         ):
             # Run procedure
             result = run_procedure("qsirecon", inputs, log_dir=tmp_path / "logs")
@@ -400,10 +409,14 @@ class TestRunProcedure:
         )
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS", {"qsiparc": mock_validator}
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"qsiparc": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"qsiparc": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"qsiparc": mock_runner}
+            ),
         ):
             # Run procedure
             result = run_procedure("qsiparc", inputs, log_dir=tmp_path / "logs")
@@ -441,11 +454,14 @@ class TestRunProcedure:
         )
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS",
-            {"heudiconv": mock_validator},
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"heudiconv": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+            ),
         ):
             # Run procedure with skip_pre_validation
             result = run_procedure(
@@ -489,10 +505,14 @@ class TestRunProcedure:
         )
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS", {"qsiprep": mock_validator}
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"qsiprep": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"qsiprep": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"qsiprep": mock_runner}
+            ),
         ):
             # Run procedure with skip_post_validation
             result = run_procedure(
@@ -540,11 +560,14 @@ class TestRunProcedure:
         log_dir = tmp_path / "logs"
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS",
-            {"heudiconv": mock_validator},
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"heudiconv": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+            ),
         ):
             result = run_procedure("heudiconv", inputs, log_dir=log_dir)
 

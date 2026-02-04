@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 from unittest.mock import Mock, patch
 
 import voxelops
@@ -52,9 +51,9 @@ class MockInputs:
     """Mock inputs for integration testing."""
 
     participant: str
-    session: Optional[str] = None
-    bids_dir: Optional[Path] = None
-    output_dir: Optional[Path] = None
+    session: str | None = None
+    bids_dir: Path | None = None
+    output_dir: Path | None = None
 
 
 class TestEndToEndIntegration:
@@ -97,11 +96,14 @@ class TestEndToEndIntegration:
         )
 
         # Patch VALIDATORS and RUNNERS
-        with patch.dict(
-            "voxelops.procedures.orchestrator.VALIDATORS",
-            {"qsiprep": mock_validator},
-        ), patch.dict(
-            "voxelops.procedures.orchestrator.RUNNERS", {"qsiprep": mock_runner}
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"qsiprep": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"qsiprep": mock_runner}
+            ),
         ):
             # Run procedure using the imported function
             result = voxelops.run_procedure(

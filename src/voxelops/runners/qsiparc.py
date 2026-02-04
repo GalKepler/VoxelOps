@@ -2,7 +2,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any
 
 from parcellate.interfaces.qsirecon.models import QSIReconConfig
 from parcellate.interfaces.qsirecon.qsirecon import run_parcellations
@@ -20,8 +20,8 @@ from voxelops.schemas.qsiparc import (
 
 
 def run_qsiparc(
-    inputs: QSIParcInputs, config: Optional[QSIParcDefaults] = None, **overrides
-) -> Dict[str, Any]:
+    inputs: QSIParcInputs, config: QSIParcDefaults | None = None, **overrides
+) -> dict[str, Any]:
     """Run parcellation on QSIRecon outputs using parcellate.
 
     Atlases are auto-discovered from the QSIRecon derivatives directory

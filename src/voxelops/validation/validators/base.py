@@ -5,8 +5,6 @@ validators inherit from. Each validator defines validation rules for
 pre-execution (input checking) and post-execution (output verification).
 """
 
-from typing import List
-
 from voxelops.validation.base import ValidationReport, ValidationRule
 from voxelops.validation.context import ValidationContext
 
@@ -92,8 +90,8 @@ class Validator:
     """
 
     procedure_name: str = "unknown"
-    pre_rules: List[ValidationRule] = []
-    post_rules: List[ValidationRule] = []
+    pre_rules: list[ValidationRule] = []
+    post_rules: list[ValidationRule] = []
 
     def validate_pre(self, context: ValidationContext) -> ValidationReport:
         """Run all pre-validation rules.

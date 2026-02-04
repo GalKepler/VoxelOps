@@ -42,7 +42,6 @@ Post-validation example:
 """
 
 from pathlib import Path
-from typing import Optional
 
 from voxelops.validation.base import ValidationResult, ValidationRule
 from voxelops.validation.context import ValidationContext
@@ -401,7 +400,7 @@ class GlobFilesExistRule(ValidationRule):
         self.severity = severity
         self.phase = phase
 
-    def _get_base_dir(self, context: ValidationContext) -> Optional[Path]:
+    def _get_base_dir(self, context: ValidationContext) -> Path | None:
         """Get the base directory to search in."""
         # Try inputs first
         if context.inputs and hasattr(context.inputs, self.base_dir_attr):

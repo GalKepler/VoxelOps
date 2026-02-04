@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 
 @dataclass
@@ -26,9 +25,9 @@ class HeudiconvInputs:
 
     dicom_dir: Path
     participant: str
-    output_dir: Optional[Path] = None
-    session: Optional[str] = None
-    heuristic: Optional[Path] = None
+    output_dir: Path | None = None
+    session: str | None = None
+    heuristic: Path | None = None
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -104,12 +103,12 @@ class HeudiconvDefaults:
         Test mode - report only, don't modify, by default False.
     """
 
-    heuristic: Optional[Path] = None
+    heuristic: Path | None = None
     bids_validator: bool = True
     overwrite: bool = False
     converter: str = "dcm2niix"
-    bids: Optional[str] = "notop"
-    grouping: Optional[str] = "all"
+    bids: str | None = "notop"
+    grouping: str | None = "all"
     docker_image: str = "nipy/heudiconv:1.3.4"
     # Post-processing options
     post_process: bool = True  # Enable post-heudiconv processing

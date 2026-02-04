@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import List, Optional
 
 
 @dataclass
@@ -27,9 +26,9 @@ class QSIPrepInputs:
 
     bids_dir: Path
     participant: str
-    output_dir: Optional[Path] = None
-    work_dir: Optional[Path] = None
-    bids_filters: Optional[Path] = None  # Path to BIDS filters JSON file
+    output_dir: Path | None = None
+    work_dir: Path | None = None
+    bids_filters: Path | None = None  # Path to BIDS filters JSON file
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -137,13 +136,13 @@ class QSIPrepDefaults:
     nprocs: int = 8
     mem_mb: int = 16000
     output_resolution: float = 1.6
-    anatomical_template: List[str] = field(
+    anatomical_template: list[str] = field(
         default_factory=lambda: ["MNI152NLin2009cAsym"]
     )
     longitudinal: bool = False
     subject_anatomical_reference: str = "unbiased"
     skip_bids_validation: bool = False
-    fs_license: Optional[Path] = None
+    fs_license: Path | None = None
     docker_image: str = "pennlinc/qsiprep:latest"
     force: bool = False
 

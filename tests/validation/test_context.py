@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from voxelops.validation.context import ValidationContext
@@ -8,16 +7,16 @@ from voxelops.validation.context import ValidationContext
 
 @dataclass
 class MockInputs:
-    bids_dir: Optional[Path] = None
-    dicom_dir: Optional[Path] = None
-    qsiprep_dir: Optional[Path] = None
-    output_dir: Optional[Path] = None
+    bids_dir: Path | None = None
+    dicom_dir: Path | None = None
+    qsiprep_dir: Path | None = None
+    output_dir: Path | None = None
 
 
 @dataclass
 class MockConfig:
     some_setting: str = "default_value"
-    another_path: Optional[Path] = None
+    another_path: Path | None = None
 
 
 class TestValidationContext:

@@ -2,14 +2,15 @@
 
 import json
 import stat
+from collections.abc import Callable
 from pathlib import Path
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any
 
 
 def _run_post_processing_step(
     step_func: Callable,
     step_name: str,
-    results: Dict[str, Any],
+    results: dict[str, Any],
     *args,
     **kwargs,
 ) -> None:
@@ -31,9 +32,9 @@ def _run_post_processing_step(
 def post_process_heudiconv_output(
     bids_dir: Path,
     participant: str,
-    session: Optional[str] = None,
+    session: str | None = None,
     dry_run: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Post-process HeudiConv output to ensure BIDS compliance.
 
@@ -117,8 +118,8 @@ def post_process_heudiconv_output(
 
 def verify_fmap_epi_files(
     participant_dir: Path,
-    session: Optional[str] = None,
-) -> Dict[str, Any]:
+    session: str | None = None,
+) -> dict[str, Any]:
     """
     Verify that expected fieldmap EPI files exist.
 
@@ -174,9 +175,9 @@ def verify_fmap_epi_files(
 def _process_single_fmap_json(
     fmap_json: Path,
     participant_dir: Path,
-    session: Optional[str],
+    session: str | None,
     dry_run: bool,
-    results: Dict[str, Any],
+    results: dict[str, Any],
 ) -> None:
     """Processes a single fmap JSON file to add IntendedFor field."""
     try:
@@ -235,9 +236,9 @@ def _process_single_fmap_json(
 
 def add_intended_for_to_fmaps(
     participant_dir: Path,
-    session: Optional[str] = None,
+    session: str | None = None,
     dry_run: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Add IntendedFor fields to fieldmap JSON files.
 
@@ -290,9 +291,9 @@ def add_intended_for_to_fmaps(
 
 def remove_bval_bvec_from_fmaps(
     participant_dir: Path,
-    session: Optional[str] = None,
+    session: str | None = None,
     dry_run: bool = False,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Hide .bvec and .bval files from fmap directories by renaming with dot prefix.
 
@@ -368,7 +369,7 @@ def remove_bval_bvec_from_fmaps(
 # Private helper functions
 
 
-def _find_dwi_targets(participant_dir: Path) -> List[Path]:
+def _find_dwi_targets(participant_dir: Path) -> list[Path]:
     """Find all DWI NIfTI files in dwi directory."""
     dwi_dir = participant_dir / "dwi"
     if not dwi_dir.exists():
@@ -376,7 +377,7 @@ def _find_dwi_targets(participant_dir: Path) -> List[Path]:
     return list(dwi_dir.glob("*_dwi.nii.gz"))
 
 
-def _find_func_targets(participant_dir: Path) -> List[Path]:
+def _find_func_targets(participant_dir: Path) -> list[Path]:
     """Find all functional BOLD NIfTI files in func directory."""
     func_dir = participant_dir / "func"
     if not func_dir.exists():
@@ -387,7 +388,7 @@ def _find_func_targets(participant_dir: Path) -> List[Path]:
 def _build_intended_for_path(
     target_file: Path,
     participant_dir: Path,
-    session: Optional[str] = None,
+    session: str | None = None,
 ) -> str:
     """
     Build BIDS-compliant relative path for IntendedFor field.
@@ -421,7 +422,7 @@ def _build_intended_for_path(
         return str(target_file.name)
 
 
-def _update_json_sidecar(json_path: Path, intended_for: List[str]) -> bool:
+def _update_json_sidecar(json_path: Path, intended_for: list[str]) -> bool:
     """
     Update JSON sidecar file with IntendedFor field.
 
@@ -466,7 +467,7 @@ def _update_json_sidecar(json_path: Path, intended_for: List[str]) -> bool:
         return False
 
 
-def _read_json_sidecar(json_path: Path) -> Optional[Dict[str, Any]]:
+def _read_json_sidecar(json_path: Path) -> dict[str, Any] | None:
     """
     Read JSON sidecar file with error handling.
 

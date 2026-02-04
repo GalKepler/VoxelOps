@@ -4,8 +4,6 @@ This module defines a hierarchy of exceptions for consistent error handling
 across all procedures in the yalab-procedures package.
 """
 
-from typing import Optional
-
 
 class YALabProcedureError(Exception):
     """Base exception for all yalab-procedures errors.
@@ -35,7 +33,7 @@ class ProcedureExecutionError(YALabProcedureError):
         self,
         procedure_name: str,
         message: str,
-        original_error: Optional[Exception] = None,
+        original_error: Exception | None = None,
     ):
         self.procedure_name = procedure_name
         self.original_error = original_error
@@ -112,7 +110,7 @@ class FreeSurferLicenseError(ProcedureConfigurationError):
     FreeSurfer and cannot locate a valid license file.
     """
 
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         if message is None:
             message = (
                 "FreeSurfer license not found. Set FS_LICENSE or FREESURFER_HOME "
@@ -127,8 +125,6 @@ class BIDSValidationError(YALabProcedureError):
     This indicates the input data does not conform to BIDS specification
     requirements for the procedure.
     """
-
-
 
     pass
 
@@ -147,7 +143,7 @@ class DependencyError(YALabProcedureError):
         The error message, by default None.
     """
 
-    def __init__(self, dependency: str, message: Optional[str] = None):
+    def __init__(self, dependency: str, message: str | None = None):
         self.dependency = dependency
         if message is None:
             message = f"Required dependency '{dependency}' is not available"

@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 @dataclass
@@ -20,7 +20,7 @@ class ValidationContext:
     # Procedure identification
     procedure_name: str
     participant: str
-    session: Optional[str] = None
+    session: str | None = None
 
     # Inputs and config (type depends on procedure)
     inputs: Any = None
@@ -28,13 +28,13 @@ class ValidationContext:
     expected_outputs: Any = None
 
     # For post-validation
-    execution_result: Optional[Dict[str, Any]] = None
+    execution_result: dict[str, Any] | None = None
 
     # Optional brain bank config
-    brain_bank_config: Optional[Dict[str, Any]] = None
+    brain_bank_config: dict[str, Any] | None = None
 
     @property
-    def input_dir(self) -> Optional[Path]:
+    def input_dir(self) -> Path | None:
         """Get the primary input directory based on procedure type."""
         if self.inputs is None:
             return None
@@ -48,7 +48,7 @@ class ValidationContext:
         return None
 
     @property
-    def output_dir(self) -> Optional[Path]:
+    def output_dir(self) -> Path | None:
         """Get the output directory."""
         if self.inputs is None:
             return None
@@ -63,12 +63,12 @@ class ValidationContext:
         return f"sub-{self.participant}"
 
     @property
-    def session_label(self) -> Optional[str]:
+    def session_label(self) -> str | None:
         """Session label with 'ses-' prefix, if session exists."""
         return f"ses-{self.session}" if self.session else None
 
     @property
-    def participant_dir(self) -> Optional[Path]:
+    def participant_dir(self) -> Path | None:
         """Get participant directory in input."""
         if self.input_dir is None:
             return None

@@ -3,7 +3,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class AuditEventType(Enum):
@@ -32,16 +32,16 @@ class AuditRecord:
     event_type: AuditEventType
     procedure: str
     participant: str
-    session: Optional[str]
+    session: str | None
     timestamp: datetime = field(default_factory=datetime.now)
 
     # Event-specific data
-    data: Dict[str, Any] = field(default_factory=dict)
+    data: dict[str, Any] = field(default_factory=dict)
 
     # For linking related events
-    run_id: Optional[str] = None  # UUID for this procedure run
+    run_id: str | None = None  # UUID for this procedure run
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "event_type": self.event_type.value,

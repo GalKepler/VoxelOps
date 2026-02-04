@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from parcellate.interfaces.models import AtlasDefinition
 
@@ -32,11 +32,11 @@ class QSIParcInputs:
 
     qsirecon_dir: Path
     participant: str
-    output_dir: Optional[Path] = None
-    session: Optional[str] = None
-    atlases: Optional[list[AtlasDefinition]] = None
-    n_jobs: Optional[int] = None
-    n_procs: Optional[int] = None
+    output_dir: Path | None = None
+    session: str | None = None
+    atlases: list[AtlasDefinition] | None = None
+    n_jobs: int | None = None
+    n_procs: int | None = None
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -60,7 +60,7 @@ class QSIParcOutputs:
     """
 
     output_dir: Path
-    workflow_dirs: Dict[str, Dict[Optional[str], Path]]
+    workflow_dirs: dict[str, dict[str | None, Path]]
 
     def exist(self) -> bool:
         """Check if key outputs exist.
@@ -82,7 +82,7 @@ class QSIParcOutputs:
 
         return True
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization.
 
         Returns
@@ -178,16 +178,16 @@ class QSIParcDefaults:
         Number of processors to use, by default 1.
     """
 
-    mask: Optional[str] = "gm"
+    mask: str | None = "gm"
     force: bool = False
     background_label: int = 0
-    resampling_target: Optional[str] = "data"
+    resampling_target: str | None = "data"
     log_level: str = "INFO"
-    n_jobs: Optional[int] = 1
-    n_procs: Optional[int] = 1
+    n_jobs: int | None = 1
+    n_procs: int | None = 1
 
 
-def _discover_sessions(qsirecon_dir: Path, participant: str) -> List[str]:
+def _discover_sessions(qsirecon_dir: Path, participant: str) -> list[str]:
     """Discover session IDs from QSIRecon output directory.
 
     Parameters
@@ -236,7 +236,7 @@ def _discover_sessions(qsirecon_dir: Path, participant: str) -> List[str]:
         return []
 
 
-def _discover_workflows(qsirecon_dir: Path) -> List[str]:
+def _discover_workflows(qsirecon_dir: Path) -> list[str]:
     """Discover workflow names from QSIRecon output directory.
 
     Parameters

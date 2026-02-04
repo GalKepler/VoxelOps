@@ -4,7 +4,7 @@ import json
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from voxelops.exceptions import (
     InputValidationError,
@@ -61,12 +61,12 @@ def validate_participant(
 
 
 def run_docker(
-    cmd: List[str],
+    cmd: list[str],
     tool_name: str,
     participant: str,
-    log_dir: Optional[Path] = None,
+    log_dir: Path | None = None,
     capture_output: bool = True,
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Execute Docker command and return execution record.
 
     Parameters

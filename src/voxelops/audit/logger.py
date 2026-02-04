@@ -3,7 +3,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
+from typing import TYPE_CHECKING, Any
 
 from voxelops.audit.records import AuditEventType, AuditRecord
 
@@ -23,7 +23,7 @@ class AuditLogger:
         log_dir: Path,
         procedure: str,
         participant: str,
-        session: Optional[str] = None,
+        session: str | None = None,
     ):
         """Initialize audit logger.
 
@@ -43,12 +43,12 @@ class AuditLogger:
         self.participant = participant
         self.session = session
         self.run_id = str(uuid.uuid4())
-        self.records: List[AuditRecord] = []
+        self.records: list[AuditRecord] = []
 
         # Ensure log directory exists
         self.log_dir.mkdir(parents=True, exist_ok=True)
 
-    def log(self, event_type: AuditEventType, data: Optional[Dict[str, Any]] = None):
+    def log(self, event_type: AuditEventType, data: dict[str, Any] | None = None):
         """Log an audit event.
 
         Parameters
@@ -119,7 +119,7 @@ class AuditLogger:
         )
         return self.log_dir / filename
 
-    def get_summary(self) -> Dict[str, Any]:
+    def get_summary(self) -> dict[str, Any]:
         """Get a summary of all logged events.
 
         Returns

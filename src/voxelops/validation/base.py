@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Dict, List, Literal, Optional
+from typing import TYPE_CHECKING, Any, Literal
 
 if TYPE_CHECKING:
     from voxelops.validation.context import ValidationContext
@@ -27,7 +27,7 @@ def _serialize_for_json(obj: Any) -> Any:
         return str(obj)
     elif isinstance(obj, dict):
         return {k: _serialize_for_json(v) for k, v in obj.items()}
-    elif isinstance(obj, (list, tuple)):
+    elif isinstance(obj, list | tuple):
         return [_serialize_for_json(item) for item in obj]
     else:
         return obj
@@ -46,10 +46,10 @@ class ValidationResult:
     passed: bool
     severity: Literal["error", "warning", "info"]
     message: str
-    details: Dict[str, Any] = field(default_factory=dict)
+    details: dict[str, Any] = field(default_factory=dict)
     timestamp: datetime = field(default_factory=datetime.now)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "rule_name": self.rule_name,
@@ -99,7 +99,7 @@ class ValidationRule(ABC):
         """
         return False
 
-    def _pass(self, message: str, details: Dict[str, Any] = None) -> ValidationResult:
+    def _pass(self, message: str, details: dict[str, Any] = None) -> ValidationResult:
         """Helper to create a passing result."""
         return ValidationResult(
             rule_name=self.name,
@@ -110,7 +110,7 @@ class ValidationRule(ABC):
             details=details or {},
         )
 
-    def _fail(self, message: str, details: Dict[str, Any] = None) -> ValidationResult:
+    def _fail(self, message: str, details: dict[str, Any] = None) -> ValidationResult:
         """Helper to create a failing result."""
         return ValidationResult(
             rule_name=self.name,
@@ -132,9 +132,9 @@ class ValidationReport:
     phase: Literal["pre", "post"]
     procedure: str
     participant: str
-    session: Optional[str]
+    session: str | None
     timestamp: datetime = field(default_factory=datetime.now)
-    results: List[ValidationResult] = field(default_factory=list)
+    results: list[ValidationResult] = field(default_factory=list)
 
     @property
     def passed(self) -> bool:
@@ -142,21 +142,21 @@ class ValidationReport:
         return all(r.passed or r.severity != "error" for r in self.results)
 
     @property
-    def errors(self) -> List[ValidationResult]:
+    def errors(self) -> list[ValidationResult]:
         """Get all failed error-severity results."""
         return [r for r in self.results if not r.passed and r.severity == "error"]
 
     @property
-    def warnings(self) -> List[ValidationResult]:
+    def warnings(self) -> list[ValidationResult]:
         """Get all failed warning-severity results."""
         return [r for r in self.results if not r.passed and r.severity == "warning"]
 
     @property
-    def passed_checks(self) -> List[ValidationResult]:
+    def passed_checks(self) -> list[ValidationResult]:
         """Get all passed results."""
         return [r for r in self.results if r.passed]
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             "phase": self.phase,

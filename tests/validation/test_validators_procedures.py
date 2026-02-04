@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 import pytest
 from voxelops.validation.context import ValidationContext
@@ -18,25 +17,25 @@ from voxelops.validation.validators import (
 class MockInputs:
     """Mock inputs for testing."""
 
-    dicom_dir: Optional[Path] = None
-    bids_dir: Optional[Path] = None
-    qsiprep_dir: Optional[Path] = None
-    qsirecon_dir: Optional[Path] = None
-    heuristic: Optional[Path] = None
+    dicom_dir: Path | None = None
+    bids_dir: Path | None = None
+    qsiprep_dir: Path | None = None
+    qsirecon_dir: Path | None = None
+    heuristic: Path | None = None
 
 
 @dataclass
 class MockExpectedOutputs:
     """Mock expected outputs for testing."""
 
-    bids_dir: Optional[Path] = None
-    participant_dir: Optional[Path] = None
-    qsiprep_dir: Optional[Path] = None
-    qsirecon_dir: Optional[Path] = None
-    output_dir: Optional[Path] = None
-    html_report: Optional[Path] = None
-    workflow_reports: Optional[dict] = None
-    workflow_dirs: Optional[dict] = None
+    bids_dir: Path | None = None
+    participant_dir: Path | None = None
+    qsiprep_dir: Path | None = None
+    qsirecon_dir: Path | None = None
+    output_dir: Path | None = None
+    html_report: Path | None = None
+    workflow_reports: dict | None = None
+    workflow_dirs: dict | None = None
 
 
 class TestHeudiConvValidator:

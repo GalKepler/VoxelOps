@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from voxelops.audit import AuditEventType, AuditLogger
 from voxelops.procedures.result import ProcedureResult
@@ -37,7 +37,7 @@ def run_procedure(
     procedure: str,
     inputs,  # Procedure-specific inputs
     config=None,  # Procedure-specific config
-    log_dir: Optional[Path] = None,
+    log_dir: Path | None = None,
     skip_pre_validation: bool = False,
     skip_post_validation: bool = False,
     **overrides,
@@ -232,7 +232,7 @@ def _serialize_for_json(obj: Any) -> Any:
         return str(obj)
     elif isinstance(obj, dict):
         return {k: _serialize_for_json(v) for k, v in obj.items()}
-    elif isinstance(obj, (list, tuple)):
+    elif isinstance(obj, list | tuple):
         return [_serialize_for_json(item) for item in obj]
     else:
         return obj
@@ -257,7 +257,7 @@ def _get_default_log_dir(inputs) -> Path:
     return Path.cwd() / "logs"
 
 
-def _inputs_to_dict(inputs) -> Dict[str, Any]:
+def _inputs_to_dict(inputs) -> dict[str, Any]:
     """Convert inputs to dictionary for logging.
 
     Parameters
@@ -279,7 +279,7 @@ def _inputs_to_dict(inputs) -> Dict[str, Any]:
     return {"inputs": str(inputs)}
 
 
-def _config_to_dict(config) -> Dict[str, Any]:
+def _config_to_dict(config) -> dict[str, Any]:
     """Convert config to dictionary for logging.
 
     Parameters

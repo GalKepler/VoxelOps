@@ -2,7 +2,7 @@
 
 import os
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 from voxelops.runners._base import (
     run_docker,
@@ -99,8 +99,8 @@ def _build_qsiprep_docker_command(
 
 
 def run_qsiprep(
-    inputs: QSIPrepInputs, config: Optional[QSIPrepDefaults] = None, **overrides
-) -> Dict[str, Any]:
+    inputs: QSIPrepInputs, config: QSIPrepDefaults | None = None, **overrides
+) -> dict[str, Any]:
     """Run QSIPrep diffusion MRI preprocessing.
 
     Parameters
