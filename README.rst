@@ -3,7 +3,6 @@ VoxelOps
 
 .. image:: https://github.com/GalKepler/VoxelOps/blob/main/docs/images/Gemini_Generated_Image_m9bi47m9bi47m9bi.png?raw=true
    :alt: VoxelOps Logo
-   :width: 400px
 
 Clean, simple neuroimaging pipeline automation for brain banks.
 ---------------------------------------------------------------
