@@ -320,3 +320,107 @@ class GlobFilesExistRule(ValidationRule):
                 "found_files": [str(f.name) for f in found_files],
             },
         )
+
+
+class ExpectedOutputsExistRule(ValidationRule):
+    """Generic rule to check if expected outputs exist.
+
+    This is a flexible base class that can validate various output structures:
+    - Single file (e.g., HTML report)
+    - Dictionary of files (e.g., {session: path})
+    - Nested dictionary (e.g., {workflow: {session: path}})
+
+    Reduces code duplication across validators.
+    """
+
+    def __init__(
+        self,
+        outputs_attr: str,
+        item_type: str,
+        severity: str = "error",
+        flatten_nested: bool = False,
+    ):
+        """Initialize the rule.
+
+        Parameters
+        ----------
+        outputs_attr : str
+            Attribute name on expected_outputs to check (e.g., 'html_report',
+            'workflow_reports', 'workflow_dirs')
+        item_type : str
+            Human-readable description of what's being checked
+            (e.g., 'HTML report', 'workflow reports', 'workflow directories')
+        severity : str
+            'error' or 'warning'
+        flatten_nested : bool
+            If True, expect nested dict structure {key1: {key2: path}}.
+            If False, expect flat dict {key: path} or single Path.
+        """
+        self.outputs_attr = outputs_attr
+        self.item_type = item_type
+        self.flatten_nested = flatten_nested
+        self.name = f"{outputs_attr}_exist"
+        self.description = f"Check {item_type} exist"
+        self.severity = severity
+
+    def check(self, context: ValidationContext) -> ValidationResult:
+        """Check that all expected outputs exist."""
+        if not context.expected_outputs:
+            return self._fail("No expected outputs available")
+
+        if not hasattr(context.expected_outputs, self.outputs_attr):
+            return self._fail(
+                f"Expected outputs missing attribute: {self.outputs_attr}"
+            )
+
+        outputs = getattr(context.expected_outputs, self.outputs_attr)
+
+        # Handle single path
+        if isinstance(outputs, Path):
+            if outputs.exists():
+                return self._pass(
+                    f"{self.item_type} exists: {outputs}",
+                    details={self.outputs_attr: str(outputs)},
+                )
+            else:
+                return self._fail(
+                    f"{self.item_type} not found: {outputs}",
+                    details={self.outputs_attr: str(outputs)},
+                )
+
+        # Handle dictionary structures
+        missing_items = []
+        found_items = []
+
+        if self.flatten_nested:
+            # Nested dictionary: {workflow: {session: path}}
+            for key1, sub_dict in outputs.items():
+                for key2, path in sub_dict.items():
+                    key2_label = f"{key2}" if key2 else "no-session"
+                    item_label = f"{key1}/{key2_label}"
+
+                    if path.exists():
+                        found_items.append(item_label)
+                    else:
+                        missing_items.append(f"{item_label} ({path})")
+        else:
+            # Flat dictionary: {key: path}
+            for key, path in outputs.items():
+                if path.exists():
+                    found_items.append(key)
+                else:
+                    missing_items.append(f"{key} ({path})")
+
+        if missing_items:
+            return self._fail(
+                f"Missing {len(missing_items)} {self.item_type}",
+                details={
+                    "missing": missing_items,
+                    "found": found_items,
+                },
+            )
+
+        return self._pass(
+            f"All {len(found_items)} {self.item_type} exist",
+            details={"found": found_items},
+        )

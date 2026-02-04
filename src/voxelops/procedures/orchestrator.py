@@ -49,6 +49,14 @@ def run_procedure(
     2. Comprehensive audit logging
     3. Post-validation checks
 
+    Important Notes
+    ---------------
+    - Post-validation runs even when execution is skipped (force=False and
+      outputs exist). This validates the integrity of existing outputs, which
+      is beneficial for detecting corruption or incomplete runs.
+    - If you want to skip validation entirely for existing outputs, set
+      skip_post_validation=True explicitly.
+
     Parameters
     ----------
     procedure : str
