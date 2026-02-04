@@ -88,6 +88,7 @@ Requirements: Python >= 3.8, Docker installed and accessible.
    workflows
    source/modules
    tutorials
+   contributing
 
 Indices and tables
 ==================

@@ -1,10 +1,5 @@
-.. VoxelOps documentation master file, created by
-   sphinx-quickstart on Mon Feb  2 09:18:04 2026.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
-Welcome to VoxelOps's Documentation!
-====================================
+VoxelOps Documentation
+======================
 
 .. image:: images/Gemini_Generated_Image_m9bi47m9bi47m9bi.png
    :alt: VoxelOps Logo
@@ -21,19 +16,80 @@ Welcome to VoxelOps's Documentation!
 
 |pypi| |license|
 
-VoxelOps is a Python package designed to streamline and automate neuroimaging data processing within brain bank environments. It provides straightforward interfaces for popular neuroimaging tools, encapsulating complex Docker commands into simple Python function calls. This ensures consistency, reproducibility, and ease of use for researchers and data managers alike.
+**Clean, simple neuroimaging pipeline automation for brain banks.**
 
-This documentation aims to provide a comprehensive guide to using VoxelOps, from installation to advanced workflows.
+VoxelOps wraps Docker-based neuroimaging tools into clean Python functions
+that return plain dicts -- ready for your database, your logs, and your
+peace of mind.
+
+.. code-block:: python
+
+   from voxelops import run_qsiprep, QSIPrepInputs
+
+   result = run_qsiprep(
+       QSIPrepInputs(bids_dir="/data/bids", participant="01"),
+       nprocs=16,
+   )
+
+   print(result["duration_human"])   # "1:30:00"
+   print(result["command"])          # exact Docker command for reproducibility
+
+Key Features
+------------
+
+- **Simple functions** -- ``run_*()`` functions that return dicts, no classes or inheritance
+- **Typed schemas** -- dataclass inputs, outputs, and defaults for every procedure
+- **Reproducibility** -- the exact Docker command is stored in every execution record
+- **Database-ready** -- results are plain dicts, trivial to persist anywhere
+- **Brain bank defaults** -- define standard parameters once, reuse everywhere
+
+Available Procedures
+--------------------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 40 20 20
+
+   * - Procedure
+     - Purpose
+     - Function
+     - Execution
+   * - HeudiConv
+     - DICOM to BIDS conversion
+     - ``run_heudiconv()``
+     - Docker
+   * - QSIPrep
+     - Diffusion MRI preprocessing
+     - ``run_qsiprep()``
+     - Docker
+   * - QSIRecon
+     - Diffusion reconstruction & connectivity
+     - ``run_qsirecon()``
+     - Docker
+   * - QSIParc
+     - Parcellation via ``parcellate``
+     - ``run_qsiparc()``
+     - Python (direct)
+
+Installation
+------------
+
+.. code-block:: bash
+
+   pip install voxelops
+
+Requirements: Python >= 3.8, Docker installed and accessible.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Contents
 
    getting_started
    workflows
    source/modules
    tutorials
-   
+   contributing
+
 Indices and tables
 ==================
 

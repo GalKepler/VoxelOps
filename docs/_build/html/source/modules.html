@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>voxelops &mdash; VoxelOps 1.0.0 documentation</title>
+  <title>API Reference &mdash; VoxelOps 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/documentation_options.js?v=51b770b3"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
               <img src="../_static/Gemini_Generated_Image_m9bi47m9bi47m9bi.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.0.0
+                2.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -48,15 +48,16 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../workflows.html">Existing Workflows</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">voxelops</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">API Reference</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="voxelops.html">voxelops package</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to VoxelOps</a></li>
 </ul>
 
         </div>
@@ -73,7 +74,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">voxelops</li>
+      <li class="breadcrumb-item active">API Reference</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/source/modules.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -83,40 +84,37 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="voxelops">
-<h1>voxelops<a class="headerlink" href="#voxelops" title="Link to this heading"></a></h1>
+  <section id="api-reference">
+<h1>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="voxelops.html">voxelops package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="voxelops.html#subpackages">Subpackages</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="voxelops.runners.html">voxelops.runners package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.heudiconv">voxelops.runners.heudiconv module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.qsiparc">voxelops.runners.qsiparc module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.qsiprep">voxelops.runners.qsiprep module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.qsirecon">voxelops.runners.qsirecon module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners._base">Shared Utilities</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.heudiconv">HeudiConv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.qsiprep">QSIPrep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.qsirecon">QSIRecon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners.qsiparc">QSIParc</a></li>
 <li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html#module-voxelops.runners">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="voxelops.schemas.html">voxelops.schemas package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.heudiconv">voxelops.schemas.heudiconv module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.qsiparc">voxelops.schemas.qsiparc module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.qsiprep">voxelops.schemas.qsiprep module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.qsirecon">voxelops.schemas.qsirecon module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.heudiconv">HeudiConv</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.qsiprep">QSIPrep</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.qsirecon">QSIRecon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas.qsiparc">QSIParc</a></li>
 <li class="toctree-l4"><a class="reference internal" href="voxelops.schemas.html#module-voxelops.schemas">Module contents</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="voxelops.utils.html">voxelops.utils package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="voxelops.utils.html#module-voxelops.utils.bids">voxelops.utils.bids module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="voxelops.utils.html#bids-utilities">BIDS Utilities</a></li>
 <li class="toctree-l4"><a class="reference internal" href="voxelops.utils.html#module-voxelops.utils">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="voxelops.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="voxelops.html#module-voxelops.exceptions">voxelops.exceptions module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="voxelops.html#module-voxelops.exceptions">Exceptions</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="voxelops.html#voxelops.exceptions.BIDSValidationError"><code class="docutils literal notranslate"><span class="pre">BIDSValidationError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="voxelops.html#voxelops.exceptions.DependencyError"><code class="docutils literal notranslate"><span class="pre">DependencyError</span></code></a></li>
 <li class="toctree-l3"><a class="reference internal" href="voxelops.html#voxelops.exceptions.DockerExecutionError"><code class="docutils literal notranslate"><span class="pre">DockerExecutionError</span></code></a></li>
@@ -129,7 +127,6 @@
 <li class="toctree-l3"><a class="reference internal" href="voxelops.html#voxelops.exceptions.YALabProcedureError"><code class="docutils literal notranslate"><span class="pre">YALabProcedureError</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="voxelops.html#module-voxelops">Module contents</a></li>
 </ul>
 </li>
 </ul>

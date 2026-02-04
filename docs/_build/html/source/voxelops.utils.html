@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>voxelops.utils package &mdash; VoxelOps 1.0.0 documentation</title>
+  <title>voxelops.utils package &mdash; VoxelOps 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
 
@@ -15,7 +15,7 @@
   
         <script src="../_static/jquery.js?v=5d32c60e"></script>
         <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-        <script src="../_static/documentation_options.js?v=8d563738"></script>
+        <script src="../_static/documentation_options.js?v=51b770b3"></script>
         <script src="../_static/doctools.js?v=9a2dae69"></script>
         <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
@@ -38,7 +38,7 @@
               <img src="../_static/Gemini_Generated_Image_m9bi47m9bi47m9bi.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                1.0.0
+                2.0.0
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -48,11 +48,11 @@
   </form>
 </div>
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+              <p class="caption" role="heading"><span class="caption-text">Contents</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../workflows.html">Existing Workflows</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">voxelops</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">API Reference</a><ul class="current">
 <li class="toctree-l2 current"><a class="reference internal" href="voxelops.html">voxelops package</a><ul class="current">
 <li class="toctree-l3 current"><a class="reference internal" href="voxelops.html#subpackages">Subpackages</a><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="voxelops.runners.html">voxelops.runners package</a></li>
@@ -60,14 +60,13 @@
 <li class="toctree-l4 current"><a class="current reference internal" href="#">voxelops.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="voxelops.html#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="voxelops.html#module-voxelops.exceptions">voxelops.exceptions module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="voxelops.html#module-voxelops">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="voxelops.html#module-voxelops.exceptions">Exceptions</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials.html">Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing.html">Contributing to VoxelOps</a></li>
 </ul>
 
         </div>
@@ -84,7 +83,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">voxelops</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">API Reference</a></li>
           <li class="breadcrumb-item"><a href="voxelops.html">voxelops package</a></li>
       <li class="breadcrumb-item active">voxelops.utils package</li>
       <li class="wy-breadcrumbs-aside">
@@ -98,15 +97,15 @@
              
   <section id="voxelops-utils-package">
 <h1>voxelops.utils package<a class="headerlink" href="#voxelops-utils-package" title="Link to this heading"></a></h1>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
-</section>
-<section id="module-voxelops.utils.bids">
-<span id="voxelops-utils-bids-module"></span><h2>voxelops.utils.bids module<a class="headerlink" href="#module-voxelops.utils.bids" title="Link to this heading"></a></h2>
-<p>BIDS post-processing utilities for HeudiConv output.</p>
+<p>Utility functions for post-processing and BIDS compliance.</p>
+<section id="bids-utilities">
+<h2>BIDS Utilities<a class="headerlink" href="#bids-utilities" title="Link to this heading"></a></h2>
+<p>Post-processing for HeudiConv output: <code class="docutils literal notranslate"><span class="pre">IntendedFor</span></code> injection,
+fieldmap validation, and cleanup of spurious <code class="docutils literal notranslate"><span class="pre">.bvec</span></code>/<code class="docutils literal notranslate"><span class="pre">.bval</span></code> files.</p>
+<p id="module-voxelops.utils.bids">BIDS post-processing utilities for HeudiConv output.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="voxelops.utils.bids.add_intended_for_to_fmaps">
-<span class="sig-name descname"><span class="pre">add_intended_for_to_fmaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">participant_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#add_intended_for_to_fmaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.add_intended_for_to_fmaps" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">add_intended_for_to_fmaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">participant_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#add_intended_for_to_fmaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.add_intended_for_to_fmaps" title="Link to this definition"></a></dt>
 <dd><p>Add IntendedFor fields to fieldmap JSON files.</p>
 <p>Maps fieldmaps to target files based on acquisition type:</p>
 <ul class="simple">
@@ -117,22 +116,22 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>participant_dir</strong> (<em>Path</em>) – Path to participant directory (or session directory if session exists).</p></li>
-<li><p><strong>session</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Session ID (for building relative paths), by default None.</p></li>
-<li><p><strong>dry_run</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, report changes without modifying files, by default False.</p></li>
+<li><p><strong>session</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Session ID (for building relative paths), by default None.</p></li>
+<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, report changes without modifying files, by default False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary with processing results.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="voxelops.utils.bids.post_process_heudiconv_output">
-<span class="sig-name descname"><span class="pre">post_process_heudiconv_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bids_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">participant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#post_process_heudiconv_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.post_process_heudiconv_output" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">post_process_heudiconv_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bids_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">participant</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#post_process_heudiconv_output"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.post_process_heudiconv_output" title="Link to this definition"></a></dt>
 <dd><p>Post-process HeudiConv output to ensure BIDS compliance.</p>
 <p>Orchestrates all post-processing steps:</p>
 <ol class="arabic simple">
@@ -144,9 +143,9 @@
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>bids_dir</strong> (<em>Path</em>) – Root BIDS directory.</p></li>
-<li><p><strong>participant</strong> (<em>str</em>) – Participant ID (without ‘sub-’ prefix).</p></li>
-<li><p><strong>session</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Session ID (without ‘ses-’ prefix), if applicable, by default None.</p></li>
-<li><p><strong>dry_run</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, report changes without modifying files, by default False.</p></li>
+<li><p><strong>participant</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – Participant ID (without ‘sub-’ prefix).</p></li>
+<li><p><strong>session</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Session ID (without ‘ses-’ prefix), if applicable, by default None.</p></li>
+<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, report changes without modifying files, by default False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -161,14 +160,14 @@
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="voxelops.utils.bids.remove_bval_bvec_from_fmaps">
-<span class="sig-name descname"><span class="pre">remove_bval_bvec_from_fmaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">participant_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#remove_bval_bvec_from_fmaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.remove_bval_bvec_from_fmaps" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">remove_bval_bvec_from_fmaps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">participant_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dry_run</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#remove_bval_bvec_from_fmaps"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.remove_bval_bvec_from_fmaps" title="Link to this definition"></a></dt>
 <dd><p>Hide .bvec and .bval files from fmap directories by renaming with dot prefix.</p>
 <p>These files are incorrectly generated by dcm2niix for fieldmaps
 and are not BIDS-compliant for EPI fieldmaps. Instead of deleting,
@@ -177,36 +176,36 @@ we rename them with a leading dot to hide them (e.g., <code class="docutils lite
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>participant_dir</strong> (<em>Path</em>) – Path to participant directory (or session directory if session exists).</p></li>
-<li><p><strong>session</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Session ID (for logging purposes), by default None.</p></li>
-<li><p><strong>dry_run</strong> (<em>bool</em><em>, </em><em>optional</em>) – If True, report files to hide without renaming, by default False.</p></li>
+<li><p><strong>session</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Session ID (for logging purposes), by default None.</p></li>
+<li><p><strong>dry_run</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a><em>, </em><em>optional</em>) – If True, report files to hide without renaming, by default False.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary with cleanup results.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="voxelops.utils.bids.verify_fmap_epi_files">
-<span class="sig-name descname"><span class="pre">verify_fmap_epi_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">participant_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#verify_fmap_epi_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.verify_fmap_epi_files" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">verify_fmap_epi_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">participant_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.14)"><span class="pre">Path</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">session</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><span class="pre">Dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="reference internal" href="../_modules/voxelops/utils/bids.html#verify_fmap_epi_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#voxelops.utils.bids.verify_fmap_epi_files" title="Link to this definition"></a></dt>
 <dd><p>Verify that expected fieldmap EPI files exist.</p>
 <p>Checks for existence of <code class="docutils literal notranslate"><span class="pre">*acq-dwi*_epi.nii.gz</span></code> and <code class="docutils literal notranslate"><span class="pre">.json</span></code> in <code class="docutils literal notranslate"><span class="pre">fmap/</span></code> directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>participant_dir</strong> (<em>Path</em>) – Path to participant directory (or session directory if session exists).</p></li>
-<li><p><strong>session</strong> (<em>Optional</em><em>[</em><em>str</em><em>]</em><em>, </em><em>optional</em>) – Session ID (for logging purposes), by default None.</p></li>
+<li><p><strong>session</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em><em>, </em><em>optional</em>) – Session ID (for logging purposes), by default None.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Dictionary with verification results.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Dict[str, Any]</p>
+<dd class="field-odd"><p>Dict[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, Any]</p>
 </dd>
 </dl>
 </dd></dl>
