@@ -5,14 +5,13 @@ validators inherit from. Each validator defines validation rules for
 pre-execution (input checking) and post-execution (output verification).
 """
 
-from abc import ABC
 from typing import List
 
 from voxelops.validation.base import ValidationReport, ValidationRule
 from voxelops.validation.context import ValidationContext
 
 
-class Validator(ABC):
+class Validator:
     """Base validator class for neuroimaging procedures.
 
     Subclass this to create procedure-specific validators (e.g., QSIPrepValidator,
