@@ -35,12 +35,12 @@ Overview
    :target: https://github.com/GalKepler/VoxelOps/actions/workflows/ci.yml
    :alt: CI
 
-.. |codecov| image:: https://codecov.io/gh/GalKepler/VoxelOps/graph/badge.svg?token=GBOLQOB5VI 
+.. |codecov| image:: https://codecov.io/gh/GalKepler/VoxelOps/graph/badge.svg?token=GBOLQOB5VI
    :target: https://codecov.io/gh/GalKepler/VoxelOps
    :alt: codecov
 
-.. |codacy| image:: https://app.codacy.com/project/badge/Grade/YOUR_CODACY_PROJECT_ID
-   :target: https://www.codacy.com/gh/GalKepler/VoxelOps/dashboard?utm_source=github.com&utm_medium=referral&utm_content=GalKepler/VoxelOps&utm_campaign=Badge_Grade
+.. |codacy| image:: https://app.codacy.com/project/badge/Grade/84bfb76385244fc3b80bc18e5c8f3bfd
+   :target: https://app.codacy.com/gh/GalKepler/VoxelOps/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade
    :alt: Codacy Badge
 
 .. |pypi| image:: https://badge.fury.io/py/voxelops.svg

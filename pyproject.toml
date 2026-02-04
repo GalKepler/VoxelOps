@@ -39,6 +39,7 @@ dev = [
     "pytest-cov>=4.0",
     "black>=23.0",
     "ruff>=0.1.0",
+    "pre-commit>=3.0",
 ]
 notebooks = [
     "jupyter>=1.0",
@@ -61,6 +62,7 @@ dev = [
     "pytest-cov>=4.0",
     "black>=23.0",
     "ruff>=0.1.0",
+    "pre-commit>=3.0",
 ]
 
 [project.urls]
