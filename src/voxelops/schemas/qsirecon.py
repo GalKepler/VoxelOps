@@ -90,6 +90,7 @@ class QSIReconOutputs:
     qsirecon_dir: Path
     participant_dir: Path
     workflow_reports: dict[str, dict[str | None, Path]]
+    recon_spec_aux_files: Path | None = None
     work_dir: Path
 
     def exist(self) -> bool:
@@ -127,6 +128,7 @@ class QSIReconOutputs:
                 workflow: {session: str(path) for session, path in sessions.items()}
                 for workflow, sessions in self.workflow_reports.items()
             },
+            "recon_spec_aux_files": str(self.recon_spec_aux_files),
             "work_dir": str(self.work_dir),
         }
 
@@ -189,6 +191,7 @@ class QSIReconOutputs:
             qsirecon_dir=qsirecon_dir,
             participant_dir=participant_dir,
             workflow_reports=workflow_reports,
+            recon_spec_aux_files=inputs.recon_spec_aux_files,
             work_dir=work_dir,
         )
 
@@ -219,7 +222,7 @@ class QSIReconDefaults:
     mem_mb: int = 16000
     fs_subjects_dir: Path | None = None
     fs_license: Path | None = None
-    docker_image: str = "pennlinc/qsirecon:latest"
+    docker_image: str = "pennlinc/qsirecon:1.2.0"
     force: bool = False
 
     def __post_init__(self):

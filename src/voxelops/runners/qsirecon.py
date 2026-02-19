@@ -140,6 +140,13 @@ def run_qsirecon(
     # Add optional mounts
     if config.fs_license and config.fs_license.exists():
         cmd.extend(["-v", f"{config.fs_license}:/license.txt:ro"])
+    if inputs.recon_spec_aux_files and inputs.recon_spec_aux_files.exists():
+        cmd.extend(
+            [
+                "-v",
+                f"{inputs.recon_spec_aux_files}:/recon_spec_aux_files:ro",
+            ]
+        )
 
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
         cmd.extend(["-v", f"{config.fs_subjects_dir}:/subjects:ro"])
@@ -180,6 +187,9 @@ def run_qsirecon(
     # Optional arguments
     if inputs.recon_spec and inputs.recon_spec.exists():
         cmd.extend(["--recon-spec", "/recon_spec.yaml"])
+
+    if inputs.recon_spec_aux_files and inputs.recon_spec_aux_files.exists():
+        cmd.extend(["--recon-spec-aux-files", "/recon_spec_aux_files"])
 
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
         cmd.extend(["--freesurfer-input", "/subjects"])

@@ -143,7 +143,7 @@ class QSIPrepDefaults:
     subject_anatomical_reference: str = "unbiased"
     skip_bids_validation: bool = False
     fs_license: Path | None = None
-    docker_image: str = "pennlinc/qsiprep:latest"
+    docker_image: str = "pennlinc/qsiprep:1.1.1"
     force: bool = False
 
     def __post_init__(self):
