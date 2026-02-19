@@ -1,5 +1,12 @@
 """Schemas for procedure inputs, outputs, and defaults."""
 
+from voxelops.schemas.freesurfer import (
+    FreeSurferBaseInputs,
+    FreeSurferBaseOutputs,
+    FreeSurferDefaults,
+    FreeSurferInputs,
+    FreeSurferOutputs,
+)
 from voxelops.schemas.heudiconv import (
     HeudiconvDefaults,
     HeudiconvInputs,
@@ -22,6 +29,12 @@ from voxelops.schemas.qsirecon import (
 )
 
 __all__ = [
+    # FreeSurfer
+    "FreeSurferInputs",
+    "FreeSurferOutputs",
+    "FreeSurferDefaults",
+    "FreeSurferBaseInputs",
+    "FreeSurferBaseOutputs",
     # HeudiConv
     "HeudiconvInputs",
     "HeudiconvOutputs",

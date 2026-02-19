@@ -28,14 +28,14 @@ def _build_heudiconv_docker_command(
         "--user",
         f"{uid}:{gid}",
         "-v",
-        f"{inputs.dicom_dir}:/dicom:ro",
+        f"{inputs.dicom_dir}:{inputs.dicom_dir}:ro",
         "-v",
         f"{output_dir}:/output",
         "-v",
         f"{config.heuristic}:/heuristic.py:ro",
         config.docker_image,
         "--files",
-        "/dicom",
+        f"{inputs.dicom_dir}",
         "--outdir",
         "/output",
         "--subjects",
@@ -71,9 +71,9 @@ def _handle_heudiconv_post_processing(
 ) -> dict[str, Any]:
     """Handles post-processing steps for HeudiConv."""
     if result["success"] and config.post_process:
-        print(f"\n{'='*80}")
+        print(f"\n{'=' * 80}")
         print(f"Running post-HeudiConv processing for participant {inputs.participant}")
-        print(f"{'='*80}\n")
+        print(f"{'=' * 80}\n")
 
         try:
             post_result = post_process_heudiconv_output(

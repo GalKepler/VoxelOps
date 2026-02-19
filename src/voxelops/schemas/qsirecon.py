@@ -55,6 +55,7 @@ class QSIReconInputs:
     work_dir: Path | None = None
     recon_spec: Path | None = None
     datasets: dict[str, Path] | None = None
+    recon_spec_aux_files: Path | None = None
     force: bool = False
 
     def __post_init__(self):
@@ -66,6 +67,8 @@ class QSIReconInputs:
             self.work_dir = Path(self.work_dir)
         if self.recon_spec:
             self.recon_spec = Path(self.recon_spec)
+        if self.recon_spec_aux_files:
+            self.recon_spec_aux_files = Path(self.recon_spec_aux_files)
         if self.datasets:
             self.datasets = {k: Path(v) for k, v in self.datasets.items()}
 
@@ -90,7 +93,6 @@ class QSIReconOutputs:
     qsirecon_dir: Path
     participant_dir: Path
     workflow_reports: dict[str, dict[str | None, Path]]
-    recon_spec_aux_files: Path | None = None
     work_dir: Path
 
     def exist(self) -> bool:
@@ -128,7 +130,6 @@ class QSIReconOutputs:
                 workflow: {session: str(path) for session, path in sessions.items()}
                 for workflow, sessions in self.workflow_reports.items()
             },
-            "recon_spec_aux_files": str(self.recon_spec_aux_files),
             "work_dir": str(self.work_dir),
         }
 
@@ -191,7 +192,6 @@ class QSIReconOutputs:
             qsirecon_dir=qsirecon_dir,
             participant_dir=participant_dir,
             workflow_reports=workflow_reports,
-            recon_spec_aux_files=inputs.recon_spec_aux_files,
             work_dir=work_dir,
         )
 

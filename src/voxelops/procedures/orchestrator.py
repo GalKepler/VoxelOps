@@ -7,10 +7,19 @@ from typing import Any
 
 from voxelops.audit import AuditEventType, AuditLogger
 from voxelops.procedures.result import ProcedureResult
-from voxelops.runners import run_heudiconv, run_qsiparc, run_qsiprep, run_qsirecon
+from voxelops.runners import (
+    run_freesurfer,
+    run_freesurfer_base,
+    run_heudiconv,
+    run_qsiparc,
+    run_qsiprep,
+    run_qsirecon,
+)
 from voxelops.runners._base import _get_default_log_dir
 from voxelops.validation.context import ValidationContext
 from voxelops.validation.validators import (
+    FreeSurferBaseValidator,
+    FreeSurferValidator,
     HeudiConvValidator,
     QSIParcValidator,
     QSIPrepValidator,
@@ -19,6 +28,8 @@ from voxelops.validation.validators import (
 
 # Registry of validators by procedure name
 VALIDATORS = {
+    "freesurfer": FreeSurferValidator(),
+    "freesurfer_base": FreeSurferBaseValidator(),
     "heudiconv": HeudiConvValidator(),
     "qsiprep": QSIPrepValidator(),
     "qsirecon": QSIReconValidator(),
@@ -27,6 +38,8 @@ VALIDATORS = {
 
 # Registry of runners by procedure name
 RUNNERS = {
+    "freesurfer": run_freesurfer,
+    "freesurfer_base": run_freesurfer_base,
     "heudiconv": run_heudiconv,
     "qsiprep": run_qsiprep,
     "qsirecon": run_qsirecon,

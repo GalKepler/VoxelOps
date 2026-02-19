@@ -36,7 +36,7 @@ class TestConfig:
     def test_default_config(self, _gid, _uid, mock_rd, mock_bids_dir):
         inputs = QSIPrepInputs(bids_dir=mock_bids_dir, participant="01")
         result = run_qsiprep(inputs)
-        assert result["config"].docker_image == "pennlinc/qsiprep:latest"
+        assert result["config"].docker_image == "pennlinc/qsiprep:1.1.1"
 
     @patch("voxelops.runners.qsiprep.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsiprep.os.getuid", return_value=1000)
