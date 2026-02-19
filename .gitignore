@@ -56,3 +56,4 @@ bids_filters.json
 qsirecon_spec.yaml
 mrtrix_tractography.yaml
 validation_framework
+examples/yalab_devops

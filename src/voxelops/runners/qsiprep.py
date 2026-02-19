@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from voxelops.runners._base import (
+    _get_default_log_dir,
     run_docker,
     validate_input_dir,
     validate_participant,
@@ -99,7 +100,10 @@ def _build_qsiprep_docker_command(
 
 
 def run_qsiprep(
-    inputs: QSIPrepInputs, config: QSIPrepDefaults | None = None, **overrides
+    inputs: QSIPrepInputs,
+    config: QSIPrepDefaults | None = None,
+    log_dir: Path | None = None,
+    **overrides,
 ) -> dict[str, Any]:
     """Run QSIPrep diffusion MRI preprocessing.
 
@@ -109,6 +113,8 @@ def run_qsiprep(
         Required inputs (bids_dir, participant, etc.).
     config : Optional[QSIPrepDefaults], optional
         Configuration (uses brain bank defaults if not provided), by default None.
+    log_dir : Path, optional
+        Directory for audit logs. Defaults to inputs.output_dir/logs.
     **overrides
         Override any config parameter (e.g., nprocs=16).
 
@@ -145,6 +151,8 @@ def run_qsiprep(
     >>> print(f"Completed in {result['duration_human']}")
     >>> print(f"Outputs in: {result['expected_outputs'].qsiprep_dir}")
     """
+    log_dir = log_dir or _get_default_log_dir(inputs)
+
     # Use brain bank defaults if config not provided
     config = config or QSIPrepDefaults()
 
@@ -190,7 +198,7 @@ def run_qsiprep(
     cmd = _build_qsiprep_docker_command(inputs, config, output_dir, work_dir)
 
     # Execute
-    log_dir = output_dir.parent / "logs"
+
     result = run_docker(
         cmd=cmd,
         tool_name="qsiprep",

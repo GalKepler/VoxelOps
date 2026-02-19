@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from voxelops.exceptions import InputValidationError
-from voxelops.runners._base import run_docker, validate_input_dir
+from voxelops.runners._base import _get_default_log_dir, run_docker, validate_input_dir
 from voxelops.schemas.heudiconv import (
     HeudiconvDefaults,
     HeudiconvInputs,
@@ -99,7 +99,10 @@ def _handle_heudiconv_post_processing(
 
 
 def run_heudiconv(
-    inputs: HeudiconvInputs, config: HeudiconvDefaults | None = None, **overrides
+    inputs: HeudiconvInputs,
+    config: HeudiconvDefaults | None = None,
+    log_dir: Path | None = None,
+    **overrides,
 ) -> dict[str, Any]:
     """Convert DICOM to BIDS using HeudiConv.
 
@@ -109,6 +112,8 @@ def run_heudiconv(
         Required inputs (dicom_dir, participant, etc.).
     config : Optional[HeudiconvDefaults], optional
         Configuration (uses defaults if not provided), by default None.
+    log_dir : Path, optional
+        Directory for audit logs. Defaults to inputs.output_dir/logs.
     **overrides
         Override any config parameter.
 
@@ -148,6 +153,7 @@ def run_heudiconv(
     >>> print(result['expected_outputs'].bids_dir)
     PosixPath('/data/bids')
     """
+    log_dir = log_dir or _get_default_log_dir(inputs)
     # Use defaults if config not provided
     config = config or HeudiconvDefaults()
 
@@ -180,11 +186,12 @@ def run_heudiconv(
     cmd = _build_heudiconv_docker_command(inputs, config, output_dir)
 
     # Execute
-    log_dir = output_dir.parent / "logs"
+
     result = run_docker(
         cmd=cmd,
         tool_name="heudiconv",
         participant=inputs.participant,
+        session=inputs.session,
         log_dir=log_dir,
     )
 

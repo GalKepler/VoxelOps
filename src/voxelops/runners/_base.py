@@ -13,6 +13,24 @@ from voxelops.exceptions import (
 )
 
 
+def _get_default_log_dir(inputs) -> Path:
+    """Get default log directory from inputs.
+
+    Parameters
+    ----------
+    inputs
+        Procedure inputs with output_dir attribute.
+
+    Returns
+    -------
+    Path
+        Log directory path.
+    """
+    if hasattr(inputs, "output_dir") and inputs.output_dir:
+        return Path(inputs.output_dir).parent / "logs"
+    return Path.cwd() / "logs"
+
+
 def validate_input_dir(input_dir: Path, dir_type: str = "Input") -> None:
     """Validate that an input directory exists.
 
@@ -231,6 +249,7 @@ def run_docker(
     cmd: list[str],
     tool_name: str,
     participant: str,
+    session: str | None = None,
     log_dir: Path | None = None,
     capture_output: bool = True,
 ) -> dict[str, Any]:
@@ -244,6 +263,8 @@ def run_docker(
         Name of the tool being run (for logging).
     participant : str
         Participant label.
+    session : Optional[str], optional
+        Session label, by default None.
     log_dir : Optional[Path], optional
         Directory to save execution log JSON, by default None.
     capture_output : bool, optional
@@ -276,7 +297,10 @@ def run_docker(
     if log_dir:
         log_dir.mkdir(parents=True, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        log_file = log_dir / f"{tool_name}_{participant}_{timestamp}.json"
+        session_part = f"_ses-{session}" if session else ""
+        log_file = (
+            log_dir / f"{tool_name}_sub-{participant}{session_part}_{timestamp}.json"
+        )
     else:
         log_file = None
 

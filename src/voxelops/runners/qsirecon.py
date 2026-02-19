@@ -1,9 +1,11 @@
 """QSIRecon diffusion reconstruction runner."""
 
 import os
+from pathlib import Path
 from typing import Any
 
 from voxelops.runners._base import (
+    _get_default_log_dir,
     run_docker,
     validate_input_dir,
     validate_participant,
@@ -16,7 +18,10 @@ from voxelops.schemas.qsirecon import (
 
 
 def run_qsirecon(
-    inputs: QSIReconInputs, config: QSIReconDefaults | None = None, **overrides
+    inputs: QSIReconInputs,
+    config: QSIReconDefaults | None = None,
+    log_dir: Path | None = None,
+    **overrides,
 ) -> dict[str, Any]:
     """Run QSIRecon diffusion reconstruction and connectivity.
 
@@ -26,6 +31,8 @@ def run_qsirecon(
         Required inputs (qsiprep_dir, participant, etc.).
     config : Optional[QSIReconDefaults], optional
         Configuration (uses brain bank defaults if not provided), by default None.
+    log_dir : Path, optional
+        Directory for audit logs. Defaults to inputs.output_dir/logs.
     **overrides
         Override any config parameter.
 
@@ -61,6 +68,8 @@ def run_qsirecon(
     >>> result = run_qsirecon(inputs, atlases=["schaefer100"])
     >>> print(result['expected_outputs'].qsirecon_dir)
     """
+    log_dir = log_dir or _get_default_log_dir(inputs)
+
     # Use brain bank defaults if config not provided
     config = config or QSIReconDefaults()
 
@@ -179,7 +188,6 @@ def run_qsirecon(
         cmd.extend(["--fs-license-file", "/license.txt"])
 
     # Execute
-    log_dir = output_dir.parent / "logs"
     result = run_docker(
         cmd=cmd,
         tool_name="qsirecon",

@@ -2,6 +2,7 @@
 
 import logging
 from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 from parcellate.interfaces.qsirecon.models import QSIReconConfig
@@ -9,6 +10,7 @@ from parcellate.interfaces.qsirecon.qsirecon import run_parcellations
 
 from voxelops.exceptions import ProcedureExecutionError
 from voxelops.runners._base import (
+    _get_default_log_dir,
     validate_input_dir,
     validate_participant,
 )
@@ -20,7 +22,10 @@ from voxelops.schemas.qsiparc import (
 
 
 def run_qsiparc(
-    inputs: QSIParcInputs, config: QSIParcDefaults | None = None, **overrides
+    inputs: QSIParcInputs,
+    config: QSIParcDefaults | None = None,
+    log_dir: Path | None = None,
+    **overrides,
 ) -> dict[str, Any]:
     """Run parcellation on QSIRecon outputs using parcellate.
 
@@ -31,6 +36,8 @@ def run_qsiparc(
     ----------
     inputs : QSIParcInputs
         Required inputs (qsirecon_dir, participant, etc.).
+    log_dir : Path, optional
+        Directory for audit logs. Defaults to inputs.output_dir/logs.
     config : Optional[QSIParcDefaults], optional
         Configuration (uses brain bank defaults if not provided), by default None.
     **overrides
@@ -66,6 +73,7 @@ def run_qsiparc(
     >>> result = run_qsiparc(inputs)
     >>> print(result['output_files'])
     """
+    log_dir = log_dir or _get_default_log_dir(inputs)
 
     # Use brain bank defaults if config not provided
     config = config or QSIParcDefaults()
@@ -130,6 +138,7 @@ def run_qsiparc(
             "inputs": inputs,
             "config": config,
             "expected_outputs": expected_outputs,
+            "log_file": log_dir / f"qsiparc_sub-{inputs.participant}.json",
         }
 
         print(f"\n{'='*80}")

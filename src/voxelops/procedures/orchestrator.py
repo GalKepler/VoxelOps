@@ -8,6 +8,7 @@ from typing import Any
 from voxelops.audit import AuditEventType, AuditLogger
 from voxelops.procedures.result import ProcedureResult
 from voxelops.runners import run_heudiconv, run_qsiparc, run_qsiprep, run_qsirecon
+from voxelops.runners._base import _get_default_log_dir
 from voxelops.validation.context import ValidationContext
 from voxelops.validation.validators import (
     HeudiConvValidator,
@@ -236,25 +237,6 @@ def _serialize_for_json(obj: Any) -> Any:
         return [_serialize_for_json(item) for item in obj]
     else:
         return obj
-
-
-def _get_default_log_dir(inputs) -> Path:
-    """Get default log directory from inputs.
-
-    Parameters
-    ----------
-    inputs
-        Procedure inputs with output_dir attribute.
-
-    Returns
-    -------
-    Path
-        Log directory path.
-    """
-    if hasattr(inputs, "output_dir") and inputs.output_dir:
-        return Path(inputs.output_dir) / "logs"
-    # Fallback to current directory
-    return Path.cwd() / "logs"
 
 
 def _inputs_to_dict(inputs) -> dict[str, Any]:
