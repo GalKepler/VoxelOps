@@ -6,6 +6,7 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
+
 from voxelops.exceptions import InputValidationError, ProcedureExecutionError
 from voxelops.runners._base import run_docker, validate_input_dir, validate_participant
 
