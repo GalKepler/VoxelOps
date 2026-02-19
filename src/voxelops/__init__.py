@@ -47,7 +47,7 @@ For full pipeline example, see examples/full_pipeline.py
 
 __author__ = "YALab DevOps"
 __email__ = "yalab.dev@gmail.com"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 # Exceptions
 # Audit system
