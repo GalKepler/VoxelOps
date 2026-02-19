@@ -17,9 +17,7 @@ class TestQSIPrepInputs:
         assert isinstance(inp.bids_dir, Path)
 
     def test_output_dir_converted(self):
-        inp = QSIPrepInputs(
-            bids_dir="/d", participant="01", output_dir="/out"
-        )
+        inp = QSIPrepInputs(bids_dir="/d", participant="01", output_dir="/out")
         assert isinstance(inp.output_dir, Path)
 
     def test_output_dir_none(self):
@@ -27,9 +25,7 @@ class TestQSIPrepInputs:
         assert inp.output_dir is None
 
     def test_work_dir_converted(self):
-        inp = QSIPrepInputs(
-            bids_dir="/d", participant="01", work_dir="/work"
-        )
+        inp = QSIPrepInputs(bids_dir="/d", participant="01", work_dir="/work")
         assert isinstance(inp.work_dir, Path)
 
     def test_work_dir_none(self):
@@ -37,9 +33,7 @@ class TestQSIPrepInputs:
         assert inp.work_dir is None
 
     def test_bids_filters_converted(self):
-        inp = QSIPrepInputs(
-            bids_dir="/d", participant="01", bids_filters="/f.json"
-        )
+        inp = QSIPrepInputs(bids_dir="/d", participant="01", bids_filters="/f.json")
         assert isinstance(inp.bids_filters, Path)
 
     def test_bids_filters_none(self):
@@ -53,9 +47,7 @@ class TestQSIPrepInputs:
 class TestQSIPrepOutputs:
     def test_from_inputs(self):
         inp = QSIPrepInputs(bids_dir="/d", participant="01")
-        out = QSIPrepOutputs.from_inputs(
-            inp, Path("/out"), Path("/work")
-        )
+        out = QSIPrepOutputs.from_inputs(inp, Path("/out"), Path("/work"))
         assert out.qsiprep_dir == Path("/out/qsiprep")
         assert out.participant_dir == Path("/out/qsiprep/sub-01")
         assert out.html_report == Path("/out/qsiprep/sub-01.html")
@@ -77,7 +69,7 @@ class TestQSIPrepDefaults:
         assert d.subject_anatomical_reference == "unbiased"
         assert d.skip_bids_validation is False
         assert d.fs_license is None
-        assert d.docker_image == "pennlinc/qsiprep:latest"
+        assert d.docker_image == "pennlinc/qsiprep:1.1.1"
 
     def test_fs_license_path_conversion(self):
         d = QSIPrepDefaults(fs_license="/lic.txt")

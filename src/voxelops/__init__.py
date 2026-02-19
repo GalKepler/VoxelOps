@@ -41,6 +41,8 @@ Available Procedures:
     - run_qsiprep: Diffusion MRI preprocessing
     - run_qsirecon: Diffusion reconstruction & connectivity
     - run_qsiparc: Parcellation using parcellate package
+    - run_freesurfer: Cortical reconstruction via FreeSurfer recon-all
+    - run_freesurfer_base: Within-subject longitudinal base template
 
 For full pipeline example, see examples/full_pipeline.py
 """
@@ -63,6 +65,8 @@ from voxelops.procedures import ProcedureResult, run_procedure
 
 # Basic runner functions (direct execution without validation)
 from voxelops.runners import (
+    run_freesurfer,
+    run_freesurfer_base,
     run_heudiconv,
     run_qsiparc,
     run_qsiprep,
@@ -71,6 +75,12 @@ from voxelops.runners import (
 
 # Schemas for inputs, outputs, and defaults
 from voxelops.schemas import (
+    FreeSurferBaseInputs,
+    FreeSurferBaseOutputs,
+    FreeSurferDefaults,
+    # FreeSurfer
+    FreeSurferInputs,
+    FreeSurferOutputs,
     HeudiconvDefaults,
     # HeudiConv
     HeudiconvInputs,
@@ -93,6 +103,8 @@ from voxelops.schemas import (
 from voxelops.validation.base import ValidationReport, ValidationResult
 from voxelops.validation.context import ValidationContext
 from voxelops.validation.validators import (
+    FreeSurferBaseValidator,
+    FreeSurferValidator,
     HeudiConvValidator,
     QSIParcValidator,
     QSIPrepValidator,
@@ -101,6 +113,8 @@ from voxelops.validation.validators import (
 
 __all__ = [
     # Basic runners (direct execution)
+    "run_freesurfer",
+    "run_freesurfer_base",
     "run_heudiconv",
     "run_qsiprep",
     "run_qsirecon",
@@ -112,6 +126,8 @@ __all__ = [
     "ValidationResult",
     "ValidationReport",
     "ValidationContext",
+    "FreeSurferValidator",
+    "FreeSurferBaseValidator",
     "HeudiConvValidator",
     "QSIPrepValidator",
     "QSIReconValidator",
@@ -120,6 +136,12 @@ __all__ = [
     "AuditEventType",
     "AuditRecord",
     "AuditLogger",
+    # Schemas - FreeSurfer
+    "FreeSurferInputs",
+    "FreeSurferOutputs",
+    "FreeSurferDefaults",
+    "FreeSurferBaseInputs",
+    "FreeSurferBaseOutputs",
     # Schemas - HeudiConv
     "HeudiconvInputs",
     "HeudiconvOutputs",

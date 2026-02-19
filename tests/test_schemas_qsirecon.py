@@ -97,7 +97,7 @@ class TestQSIReconDefaults:
         # atlases moved to QSIReconInputs
         assert d.fs_subjects_dir is None
         assert d.fs_license is None
-        assert d.docker_image == "pennlinc/qsirecon:latest"
+        assert d.docker_image == "pennlinc/qsirecon:1.2.0"
         assert d.force is False
 
     def test_fs_subjects_dir_converted(self):

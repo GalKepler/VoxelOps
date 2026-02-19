@@ -33,7 +33,7 @@ class TestConfig:
     def test_default_config(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
         inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
         result = run_qsirecon(inputs)
-        assert result["config"].docker_image == "pennlinc/qsirecon:latest"
+        assert result["config"].docker_image == "pennlinc/qsirecon:1.2.0"
 
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
