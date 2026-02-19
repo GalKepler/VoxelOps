@@ -28,8 +28,6 @@ class HeudiconvInputs:
     output_dir: Path | None = None
     session: str | None = None
     heuristic: Path | None = None
-    bids: str | None = "notop"
-    grouping: str | None = "all"
 
     def __post_init__(self):
         """Ensure paths are Path objects."""
@@ -38,12 +36,6 @@ class HeudiconvInputs:
             self.output_dir = Path(self.output_dir)
         if self.heuristic:
             self.heuristic = Path(self.heuristic)
-        if self.bids:
-            _bids = str(self.bids)
-            self.bids = _bids if _bids.lower() != "none" else None
-        if self.grouping:
-            _grouping = str(self.grouping)
-            self.grouping = _grouping if _grouping.lower() != "none" else None
 
 
 @dataclass
@@ -115,6 +107,8 @@ class HeudiconvDefaults:
 
     heuristic: Path | None = None
     bids_validator: bool = True
+    bids: str | None = "notop"
+    grouping: str | None = "all"
     overwrite: bool = False
     converter: str = "dcm2niix"
     docker_image: str = "nipy/heudiconv:1.3.4"

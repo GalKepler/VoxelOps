@@ -6,7 +6,6 @@ from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
-
 from voxelops.exceptions import InputValidationError, ProcedureExecutionError
 from voxelops.runners._base import run_docker, validate_input_dir, validate_participant
 
@@ -54,9 +53,7 @@ class TestValidateParticipant:
 class TestRunDocker:
     @patch("voxelops.runners._base.subprocess.run")
     def test_success_with_log_dir(self, mock_subproc, tmp_path):
-        mock_subproc.return_value = MagicMock(
-            returncode=0, stdout="ok", stderr=""
-        )
+        mock_subproc.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         log_dir = tmp_path / "logs"
 
         record = run_docker(
@@ -76,22 +73,22 @@ class TestRunDocker:
         saved = json.loads(log_file.read_text())
         assert saved["success"] is True
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_success_no_log_dir(self, mock_subproc):
-        mock_subproc.return_value = MagicMock(
-            returncode=0, stdout="ok", stderr=""
-        )
+    def test_success_no_log_dir(self, mock_subproc, _ensure):
+        mock_subproc.return_value = MagicMock(returncode=0, stdout="ok", stderr="")
         record = run_docker(
-            cmd=["docker", "run"], tool_name="t", participant="01"
+            cmd=["docker", "run", "img"], tool_name="t", participant="01"
         )
         assert record["success"] is True
         assert "log_file" not in record
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_capture_output_false(self, mock_subproc):
+    def test_capture_output_false(self, mock_subproc, _ensure):
         mock_subproc.return_value = MagicMock(returncode=0)
         record = run_docker(
-            cmd=["docker", "run"],
+            cmd=["docker", "run", "img"],
             tool_name="t",
             participant="01",
             capture_output=False,
@@ -100,15 +97,16 @@ class TestRunDocker:
         assert "stdout" not in record
         assert "stderr" not in record
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_failure_with_stderr(self, mock_subproc, tmp_path):
+    def test_failure_with_stderr(self, mock_subproc, _ensure, tmp_path):
         mock_subproc.return_value = MagicMock(
             returncode=1, stdout="", stderr="segfault"
         )
         log_dir = tmp_path / "logs"
         with pytest.raises(ProcedureExecutionError, match="failed"):
             run_docker(
-                cmd=["docker", "run"],
+                cmd=["docker", "run", "img"],
                 tool_name="qsiprep",
                 participant="01",
                 log_dir=log_dir,
@@ -120,58 +118,57 @@ class TestRunDocker:
         assert saved["success"] is False
         assert "error" in saved
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_failure_no_stderr(self, mock_subproc):
-        mock_subproc.return_value = MagicMock(
-            returncode=1, stdout="", stderr=""
-        )
+    def test_failure_no_stderr(self, mock_subproc, _ensure):
+        mock_subproc.return_value = MagicMock(returncode=1, stdout="", stderr="")
         with pytest.raises(ProcedureExecutionError):
             run_docker(
-                cmd=["docker", "run"],
+                cmd=["docker", "run", "img"],
                 tool_name="t",
                 participant="01",
             )
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_failure_no_log_file(self, mock_subproc):
-        mock_subproc.return_value = MagicMock(
-            returncode=2, stdout="", stderr="err"
-        )
+    def test_failure_no_log_file(self, mock_subproc, _ensure):
+        mock_subproc.return_value = MagicMock(returncode=2, stdout="", stderr="err")
         with pytest.raises(ProcedureExecutionError):
             run_docker(
-                cmd=["docker", "run"],
+                cmd=["docker", "run", "img"],
                 tool_name="t",
                 participant="01",
             )
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_timeout_exception(self, mock_subproc):
-        mock_subproc.side_effect = subprocess.TimeoutExpired(
-            cmd=["docker"], timeout=60
-        )
+    def test_timeout_exception(self, mock_subproc, _ensure):
+        mock_subproc.side_effect = subprocess.TimeoutExpired(cmd=["docker"], timeout=60)
         with pytest.raises(ProcedureExecutionError, match="timed out"):
             run_docker(
-                cmd=["docker", "run"],
+                cmd=["docker", "run", "img"],
                 tool_name="t",
                 participant="01",
             )
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_generic_exception(self, mock_subproc):
+    def test_generic_exception(self, mock_subproc, _ensure):
         mock_subproc.side_effect = OSError("no docker")
         with pytest.raises(ProcedureExecutionError, match="no docker"):
             run_docker(
-                cmd=["docker", "run"],
+                cmd=["docker", "run", "img"],
                 tool_name="t",
                 participant="01",
             )
 
+    @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
-    def test_procedure_execution_error_reraised(self, mock_subproc):
+    def test_procedure_execution_error_reraised(self, mock_subproc, _ensure):
         mock_subproc.side_effect = ProcedureExecutionError("t", "boom")
         with pytest.raises(ProcedureExecutionError, match="boom"):
             run_docker(
-                cmd=["docker", "run"],
+                cmd=["docker", "run", "img"],
                 tool_name="t",
                 participant="01",
             )
