@@ -79,6 +79,8 @@ Features
 - **Database-Ready** -- Results are plain dicts, trivial to save to PostgreSQL, MongoDB, or JSON
 - **Brain Bank Defaults** -- Define your standard parameters once, reuse across all participants
 - **Comprehensive Logging** -- Every run logged to JSON with timestamps, duration, and exit codes
+- **Validation Framework** -- Pre- and post-execution validation with detailed reports
+- **Audit Trail** -- Full audit logging for every procedure run
 
 Installation
 ------------
@@ -95,10 +97,12 @@ For development:
     cd VoxelOps
     pip install -e ".[dev]"
 
-**Requirements**: Python >= 3.8, Docker installed and accessible.
+**Requirements**: Python >= 3.10, Docker installed and accessible.
 
 Quick Start
 -----------
+
+**Basic (direct execution):**
 
 .. code-block:: python
 
@@ -114,6 +118,27 @@ Quick Start
     print(f"Completed in: {result['duration_human']}")
     print(f"Outputs: {result['expected_outputs'].qsiprep_dir}")
     print(f"Command: {' '.join(result['command'])}")
+
+**With validation and audit logging (recommended):**
+
+.. code-block:: python
+
+    from voxelops import run_procedure, QSIPrepInputs
+
+    inputs = QSIPrepInputs(
+        bids_dir="/data/bids",
+        participant="01",
+    )
+
+    result = run_procedure("qsiprep", inputs)
+
+    if result.success:
+        print(f"Completed in {result.duration_seconds:.1f}s")
+    else:
+        print(f"Failed: {result.get_failure_reason()}")
+
+    # Save complete audit trail to your database
+    db.save_procedure_result(result.to_dict())
 
 Available Procedures
 --------------------
@@ -164,6 +189,39 @@ Define your standard parameters once, use them everywhere:
         inputs = QSIPrepInputs(bids_dir=bids_root, participant=participant)
         result = run_qsiprep(inputs, config=BRAIN_BANK_QSIPREP)
         db.save_processing_record(result)
+
+Validation & Audit
+------------------
+
+``run_procedure()`` wraps any runner with pre-validation, post-validation, and a full audit trail:
+
+.. code-block:: python
+
+    from voxelops import run_procedure, HeudiconvInputs, HeudiconvDefaults
+
+    inputs = HeudiconvInputs(
+        dicom_dir="/data/dicoms",
+        participant="01",
+        session="baseline",
+    )
+    config = HeudiconvDefaults(heuristic="/code/heuristic.py")
+
+    result = run_procedure("heudiconv", inputs, config)
+
+    # result.pre_validation  -- ValidationReport before execution
+    # result.post_validation -- ValidationReport after execution
+    # result.audit_log_file  -- path to the JSON audit log
+
+Logging
+-------
+
+All runners accept an optional ``log_dir`` parameter. When provided, an execution
+JSON log is written alongside any audit logs. The log directory defaults to
+``<output_dir>/../logs`` derived from the inputs.
+
+.. code-block:: python
+
+    result = run_qsiprep(inputs, log_dir="/data/logs/qsiprep")
 
 Documentation
 -------------
