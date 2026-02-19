@@ -5,11 +5,13 @@ import voxelops
 
 class TestPackageExports:
     def test_version(self):
-        assert voxelops.__version__ == "2.0.0"
+        assert voxelops.__version__ == "0.2.0"
 
     def test_all_completeness(self):
         for name in voxelops.__all__:
-            assert hasattr(voxelops, name), f"{name} listed in __all__ but not importable"
+            assert hasattr(voxelops, name), (
+                f"{name} listed in __all__ but not importable"
+            )
 
     def test_runner_imports(self):
         assert callable(voxelops.run_heudiconv)
