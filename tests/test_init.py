@@ -5,7 +5,7 @@ import voxelops
 
 class TestPackageExports:
     def test_version(self):
-        assert voxelops.__version__ == "0.2.1"
+        assert voxelops.__version__ == "0.2.2"
 
     def test_all_completeness(self):
         for name in voxelops.__all__:

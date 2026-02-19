@@ -151,13 +151,6 @@ def run_procedure(
 
     try:
         execution_result = runner(inputs, config, log_dir=log_dir, **overrides)
-        audit.log(
-            AuditEventType.EXECUTION_SUCCESS,
-            {
-                "duration_seconds": execution_result.get("duration_seconds"),
-                "exit_code": execution_result.get("exit_code"),
-            },
-        )
     except Exception as e:
         audit.log(AuditEventType.EXECUTION_FAILED, {"error": str(e)})
         return ProcedureResult(
@@ -171,6 +164,25 @@ def run_procedure(
             pre_validation=pre_report,
             execution={"error": str(e), "success": False},
             audit_log_file=str(audit._get_log_file()),
+        )
+
+    # Log execution outcome; a non-zero exit code is not a hard stop —
+    # post-validation is the authoritative check for usable outputs.
+    if execution_result.get("success"):
+        audit.log(
+            AuditEventType.EXECUTION_SUCCESS,
+            {
+                "duration_seconds": execution_result.get("duration_seconds"),
+                "exit_code": execution_result.get("exit_code"),
+            },
+        )
+    else:
+        audit.log(
+            AuditEventType.EXECUTION_FAILED,
+            {
+                "exit_code": execution_result.get("exit_code"),
+                "error": execution_result.get("error"),
+            },
         )
 
     # === POST-VALIDATION ===

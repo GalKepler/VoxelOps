@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "voxelops"
-version = "0.2.1"
+version = "0.2.2"
 description = "Clean, simple neuroimaging pipeline automation for brain banks"
 readme = "README.rst"
 requires-python = ">=3.10"

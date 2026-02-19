@@ -7,7 +7,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from voxelops.exceptions import InputValidationError, ProcedureExecutionError
+from voxelops.exceptions import (  # ProcedureExecutionError still used by timeout/generic tests
+    InputValidationError,
+    ProcedureExecutionError,
+)
 from voxelops.runners._base import run_docker, validate_input_dir, validate_participant
 
 # -- validate_input_dir -------------------------------------------------------
@@ -105,14 +108,16 @@ class TestRunDocker:
             returncode=1, stdout="", stderr="segfault"
         )
         log_dir = tmp_path / "logs"
-        with pytest.raises(ProcedureExecutionError, match="failed"):
-            run_docker(
-                cmd=["docker", "run", "img"],
-                tool_name="qsiprep",
-                participant="01",
-                log_dir=log_dir,
-            )
-        # log file should still be written with error
+        record = run_docker(
+            cmd=["docker", "run", "img"],
+            tool_name="qsiprep",
+            participant="01",
+            log_dir=log_dir,
+        )
+        assert record["success"] is False
+        assert record["exit_code"] == 1
+        assert "error" in record
+        # log file written with error info
         log_files = list(log_dir.glob("*.json"))
         assert len(log_files) == 1
         saved = json.loads(log_files[0].read_text())
@@ -123,23 +128,26 @@ class TestRunDocker:
     @patch("voxelops.runners._base.subprocess.run")
     def test_failure_no_stderr(self, mock_subproc, _ensure):
         mock_subproc.return_value = MagicMock(returncode=1, stdout="", stderr="")
-        with pytest.raises(ProcedureExecutionError):
-            run_docker(
-                cmd=["docker", "run", "img"],
-                tool_name="t",
-                participant="01",
-            )
+        record = run_docker(
+            cmd=["docker", "run", "img"],
+            tool_name="t",
+            participant="01",
+        )
+        assert record["success"] is False
+        assert record["exit_code"] == 1
+        assert "error" in record
 
     @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")
     def test_failure_no_log_file(self, mock_subproc, _ensure):
         mock_subproc.return_value = MagicMock(returncode=2, stdout="", stderr="err")
-        with pytest.raises(ProcedureExecutionError):
-            run_docker(
-                cmd=["docker", "run", "img"],
-                tool_name="t",
-                participant="01",
-            )
+        record = run_docker(
+            cmd=["docker", "run", "img"],
+            tool_name="t",
+            participant="01",
+        )
+        assert record["success"] is False
+        assert "log_file" not in record
 
     @patch("voxelops.runners._base.ensure_docker_image")
     @patch("voxelops.runners._base.subprocess.run")

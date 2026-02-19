@@ -531,6 +531,94 @@ class TestRunProcedure:
         # Verify post-validation was not called
         mock_validator.validate_post.assert_not_called()
 
+    def test_nonzero_exit_proceeds_to_post_validation(self, tmp_path):
+        """Non-zero exit code does not short-circuit; post-validation runs."""
+        mock_validator = Mock()
+
+        pre_report = Mock()
+        pre_report.passed = True
+        pre_report.to_dict.return_value = {"phase": "pre", "passed": True}
+        mock_validator.validate_pre.return_value = pre_report
+
+        post_report = Mock()
+        post_report.passed = True
+        post_report.phase = "post"
+        post_report.to_dict.return_value = {"phase": "post", "passed": True}
+        mock_validator.validate_post.return_value = post_report
+
+        # Runner returns success=False (non-zero exit) but outputs exist
+        mock_runner = Mock(
+            return_value={
+                "success": False,
+                "exit_code": 1,
+                "error": "heudiconv exited with code 1",
+                "expected_outputs": {},
+            }
+        )
+
+        inputs = MockInputs(participant="01", output_dir=tmp_path / "output")
+
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"heudiconv": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+            ),
+        ):
+            result = run_procedure("heudiconv", inputs, log_dir=tmp_path / "logs")
+
+        # Post-validation ran and passed → overall success
+        assert result.status == "success"
+        assert result.success is True
+        mock_validator.validate_post.assert_called_once()
+
+    def test_nonzero_exit_with_failed_post_validation(self, tmp_path):
+        """Non-zero exit code + failing post-validation → post_validation_failed."""
+        mock_validator = Mock()
+
+        pre_report = Mock()
+        pre_report.passed = True
+        pre_report.to_dict.return_value = {"phase": "pre", "passed": True}
+        mock_validator.validate_pre.return_value = pre_report
+
+        post_report = Mock()
+        post_report.passed = False
+        post_report.phase = "post"
+        post_report.to_dict.return_value = {
+            "phase": "post",
+            "passed": False,
+            "errors": [{"message": "Output files not found"}],
+        }
+        mock_validator.validate_post.return_value = post_report
+
+        mock_runner = Mock(
+            return_value={
+                "success": False,
+                "exit_code": 1,
+                "error": "heudiconv exited with code 1",
+                "expected_outputs": {},
+            }
+        )
+
+        inputs = MockInputs(participant="01", output_dir=tmp_path / "output")
+
+        with (
+            patch.dict(
+                "voxelops.procedures.orchestrator.VALIDATORS",
+                {"heudiconv": mock_validator},
+            ),
+            patch.dict(
+                "voxelops.procedures.orchestrator.RUNNERS", {"heudiconv": mock_runner}
+            ),
+        ):
+            result = run_procedure("heudiconv", inputs, log_dir=tmp_path / "logs")
+
+        assert result.status == "post_validation_failed"
+        assert result.success is False
+        mock_validator.validate_post.assert_called_once()
+
     def test_audit_log_file_created(self, tmp_path):
         """Test that audit log file is created."""
         # Setup mocks

@@ -307,11 +307,11 @@ def run_docker(
     # Validate / pull the Docker image before running.
     ensure_docker_image(cmd)
 
-    print(f"\n{'='*80}")
+    print(f"\n{'=' * 80}")
     print(f"Running {tool_name} for participant {participant}")
-    print(f"{'='*80}")
+    print(f"{'=' * 80}")
     print(f"Command: {' '.join(cmd)}")
-    print(f"{'='*80}\n")
+    print(f"{'=' * 80}\n")
 
     start_time = datetime.now()
 
@@ -340,35 +340,33 @@ def run_docker(
             record["stdout"] = result.stdout
             record["stderr"] = result.stderr
 
-        # Save to JSON log
         if log_file:
             record["log_file"] = str(log_file)
+
+        # Check for errors — non-zero exit code is recorded but does NOT raise;
+        # post-validation is the authoritative check for whether outputs are usable.
+        if result.returncode != 0:
+            error_msg = f"{tool_name} exited with code {result.returncode}"
+            if capture_output and result.stderr:
+                error_msg += f"\n\nStderr (last 1000 chars):\n{result.stderr[-1000:]}"
+            record["error"] = error_msg
+            print(f"\n{'=' * 80}")
+            print(
+                f"⚠ {tool_name} exited with code {result.returncode} — outputs will be validated"
+            )
+            print(f"Duration: {duration}")
+            print(f"{'=' * 80}\n")
+        else:
+            print(f"\n{'=' * 80}")
+            print(f"✓ {tool_name} completed successfully")
+            print(f"Duration: {duration}")
+            print(f"{'=' * 80}\n")
+
+        # Save log file
+        if log_file:
             with open(log_file, "w") as f:
                 json.dump(record, f, indent=2)
             print(f"Execution log saved: {log_file}")
-
-        # Check for errors
-        if result.returncode != 0:
-            error_msg = f"{tool_name} failed with exit code {result.returncode}"
-            if capture_output and result.stderr:
-                error_msg += f"\n\nStderr (last 1000 chars):\n{result.stderr[-1000:]}"
-
-            record["error"] = error_msg
-
-            # Update log file with error
-            if log_file:
-                with open(log_file, "w") as f:
-                    json.dump(record, f, indent=2)
-
-            raise ProcedureExecutionError(
-                procedure_name=tool_name,
-                message=error_msg,
-            )
-
-        print(f"\n{'='*80}")
-        print(f"✓ {tool_name} completed successfully")
-        print(f"Duration: {duration}")
-        print(f"{'='*80}\n")
 
         return record
 
