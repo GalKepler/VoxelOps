@@ -150,7 +150,7 @@ def run_procedure(
     audit.log(AuditEventType.EXECUTION_START)
 
     try:
-        execution_result = runner(inputs, config, **overrides)
+        execution_result = runner(inputs, config, log_dir=log_dir, **overrides)
         audit.log(
             AuditEventType.EXECUTION_SUCCESS,
             {
