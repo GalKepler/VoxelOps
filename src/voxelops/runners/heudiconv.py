@@ -55,12 +55,11 @@ def _build_heudiconv_docker_command(
     if config.bids_validator:
         cmd.append("--bids")
 
-    if config.bids:
-        cmd.extend(["--bids", config.bids])
+    if inputs.bids:
+        cmd.extend(["--bids", inputs.bids])
 
-    if config.grouping:
-        cmd.extend(["--grouping", config.grouping])
-
+    if inputs.grouping:
+        cmd.extend(["--grouping", inputs.grouping])
     return cmd
 
 

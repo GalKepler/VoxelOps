@@ -55,6 +55,7 @@ class QSIReconInputs:
     work_dir: Path | None = None
     recon_spec: Path | None = None
     datasets: dict[str, Path] | None = None
+    force: bool = False
 
     def __post_init__(self):
         """Ensure paths are Path objects."""

@@ -7,12 +7,15 @@ within the VoxelOps framework.
 
 from pathlib import Path
 
-from voxelops import QSIReconInputs, run_procedure
+from voxelops import QSIReconDefaults, QSIReconInputs, run_procedure
 
 # Input paths -- update these to match your setup
 qsiprep_dir = Path("/media/storage/yalab-dev/qsiprep_test/derivatives/qsiprep")
 participant = "CLMC10"
-recon_spec = Path("/home/galkepler/Projects/yalab-devops/VoxelOps/qsirecon_spec.yaml")
+# recon_spec = Path("/home/galkepler/Projects/yalab-devops/VoxelOps/qsirecon_spec.yaml")
+recon_spec = Path(
+    "/home/galkepler/Projects/yalab-devops/VoxelOps/mrtrix_tractography.yaml"
+)
 fs_license = Path("/home/galkepler/misc/freesurfer/license.txt")
 datasets = {
     "atlases": Path("/media/storage/yalab-dev/voxelops/Schaefer2018Tian2020_atlases")
@@ -23,8 +26,11 @@ output_dir = Path("/media/storage/yalab-dev/qsiprep_test/derivatives/qsirecon/")
 work_dir = Path("/media/storage/yalab-dev/qsiprep_test/work/qsirecon/")
 log_dir = Path("/media/storage/yalab-dev/qsiprep_test/logs")
 
+config = QSIReconDefaults()
+config.docker_image = "pennlinc/qsirecon:unstable"
 
 print("Running QSIRecon with the following settings:")
+print(f"  Docker image: {config.docker_image}")
 print(f"  QSIPrep directory: {qsiprep_dir} -- {qsiprep_dir.exists()}")
 print(f"  Participant: {participant}")
 print(f"  Reconstruction spec: {recon_spec} -- {recon_spec.exists()}")
@@ -44,7 +50,9 @@ inputs = QSIReconInputs(
 )
 
 # Run with defaults
-result = run_procedure(procedure="qsirecon", inputs=inputs, fs_license=fs_license)
+result = run_procedure(
+    procedure="qsirecon", inputs=inputs, fs_license=fs_license, config=config
+)
 
 if result.success:
     print(f"✓ Success! Completed in {result.duration_seconds:.1f}s")
