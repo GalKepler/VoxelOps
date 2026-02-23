@@ -64,6 +64,14 @@ class TestQSIReconInputs:
         assert len(inp.atlases) == 14
         assert "AAL116" in inp.atlases
 
+    def test_session_none_by_default(self):
+        inp = QSIReconInputs(qsiprep_dir="/d", participant="01")
+        assert inp.session is None
+
+    def test_session_stored(self):
+        inp = QSIReconInputs(qsiprep_dir="/d", participant="01", session="20240711")
+        assert inp.session == "20240711"
+
 
 # -- QSIReconOutputs ---------------------------------------------------------
 

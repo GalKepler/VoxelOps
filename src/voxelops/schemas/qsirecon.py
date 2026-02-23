@@ -17,6 +17,12 @@ class QSIReconInputs:
         QSIPrep output directory.
     participant : str
         Participant label (without 'sub-' prefix).
+    session : str, optional
+        Session label (without 'ses-' prefix), by default None.
+        When provided, ``--session-id`` is passed to qsirecon so that
+        only data from that specific session is processed.  This enables
+        per-session reconstruction without re-running the full dataset.
+        Leave ``None`` for datasets that have no session structure.
     output_dir : Optional[Path], optional
         Output directory, by default None.
         If None, defaults to qsiprep_dir/../qsirecon.
@@ -29,10 +35,17 @@ class QSIReconInputs:
         Dictionary of dataset names and paths, by default None.
     atlases : Optional[List[str]], optional
         List of atlases for connectivity, by default None.
+    recon_spec_aux_files : Optional[Path], optional
+        Directory with auxiliary files referenced by the recon spec
+        (e.g. response functions for MRtrix3).  The directory is mounted
+        into the container using its own basename as the mount point
+        (e.g. a local path ending in ``responses/`` becomes
+        ``/responses`` inside the container).  By default None.
     """
 
     qsiprep_dir: Path
     participant: str
+    session: str | None = None
     atlases: list[str] = field(
         default_factory=lambda: [
             "4S156Parcels",

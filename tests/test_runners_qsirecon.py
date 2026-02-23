@@ -123,8 +123,8 @@ class TestDockerCommand:
         cfg = QSIReconDefaults(fs_subjects_dir=fs_dir)
         run_qsirecon(inputs, config=cfg)
         cmd = mock_rd.call_args.kwargs["cmd"]
-        assert "--freesurfer-input" in cmd
-        assert "/subjects" in cmd
+        assert "--fs-subjects-dir" in cmd
+        assert "/fs_subjects_dir" in cmd
 
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
@@ -197,16 +197,16 @@ class TestDockerCommand:
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
     @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
-    def test_recon_spec_volume_always_mounted(
+    def test_recon_spec_not_mounted_when_none(
         self, _gid, _uid, mock_rd, mock_qsiprep_dir
     ):
-        """Quirk: line 95 unconditionally mounts inputs.recon_spec even when None."""
+        """When recon_spec is None no volume or --recon-spec arg should appear."""
         inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
         run_qsirecon(inputs)
         cmd = mock_rd.call_args.kwargs["cmd"]
-        # The volume mount is always present (even for None)
         volume_strs = [c for c in cmd if "/recon_spec.yaml:ro" in c]
-        assert len(volume_strs) == 1
+        assert len(volume_strs) == 0
+        assert "--recon-spec" not in cmd
 
     @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
     @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
@@ -240,3 +240,74 @@ class TestDockerCommand:
         run_qsirecon(inputs)
         cmd = mock_rd.call_args.kwargs["cmd"]
         assert "--atlases" not in cmd
+
+    @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
+    @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
+    def test_session_id_arg(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
+        """--session-id is included when inputs.session is set."""
+        inputs = QSIReconInputs(
+            qsiprep_dir=mock_qsiprep_dir, participant="01", session="202407110849"
+        )
+        run_qsirecon(inputs)
+        cmd = mock_rd.call_args.kwargs["cmd"]
+        assert "--session-id" in cmd
+        idx = cmd.index("--session-id")
+        assert cmd[idx + 1] == "202407110849"
+
+    @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
+    @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
+    def test_no_session_no_session_id_arg(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
+        """--session-id is absent when inputs.session is None."""
+        inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
+        run_qsirecon(inputs)
+        cmd = mock_rd.call_args.kwargs["cmd"]
+        assert "--session-id" not in cmd
+
+    @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
+    @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
+    def test_session_passed_to_run_docker(self, _gid, _uid, mock_rd, mock_qsiprep_dir):
+        """Session label is forwarded to run_docker for log-file naming."""
+        inputs = QSIReconInputs(
+            qsiprep_dir=mock_qsiprep_dir, participant="01", session="20240711"
+        )
+        run_qsirecon(inputs)
+        assert mock_rd.call_args.kwargs["session"] == "20240711"
+
+    @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
+    @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
+    def test_aux_files_basename_mount(
+        self, _gid, _uid, mock_rd, mock_qsiprep_dir, tmp_path
+    ):
+        """recon_spec_aux_files is mounted using its directory basename."""
+        aux_dir = tmp_path / "responses"
+        aux_dir.mkdir()
+        inputs = QSIReconInputs(
+            qsiprep_dir=mock_qsiprep_dir,
+            participant="01",
+            recon_spec_aux_files=aux_dir,
+        )
+        run_qsirecon(inputs)
+        cmd = mock_rd.call_args.kwargs["cmd"]
+        assert f"{aux_dir}:/responses:ro" in " ".join(cmd)
+        assert "--recon-spec-aux-files" in cmd
+        idx = cmd.index("--recon-spec-aux-files")
+        assert cmd[idx + 1] == "/responses"
+
+    @patch("voxelops.runners.qsirecon.run_docker", return_value=_docker_ok())
+    @patch("voxelops.runners.qsirecon.os.getuid", return_value=1000)
+    @patch("voxelops.runners.qsirecon.os.getgid", return_value=1000)
+    def test_fs_subjects_dir_volume_path(
+        self, _gid, _uid, mock_rd, mock_qsiprep_dir, tmp_path
+    ):
+        """FreeSurfer subjects dir is mounted at /fs_subjects_dir in-container."""
+        fs_dir = tmp_path / "freesurfer"
+        fs_dir.mkdir()
+        inputs = QSIReconInputs(qsiprep_dir=mock_qsiprep_dir, participant="01")
+        cfg = QSIReconDefaults(fs_subjects_dir=fs_dir)
+        run_qsirecon(inputs, config=cfg)
+        cmd = mock_rd.call_args.kwargs["cmd"]
+        assert f"{fs_dir}:/fs_subjects_dir:ro" in " ".join(cmd)
