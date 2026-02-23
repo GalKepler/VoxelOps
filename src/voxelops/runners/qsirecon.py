@@ -133,23 +133,25 @@ def run_qsirecon(
         f"{output_dir}:/out",
         "-v",
         f"{work_dir}:/work",
-        "-v",
-        f"{inputs.recon_spec}:/recon_spec.yaml:ro",
     ]
+
+    # Mount recon spec only when provided
+    if inputs.recon_spec and inputs.recon_spec.exists():
+        cmd.extend(["-v", f"{inputs.recon_spec}:/recon_spec.yaml:ro"])
 
     # Add optional mounts
     if config.fs_license and config.fs_license.exists():
         cmd.extend(["-v", f"{config.fs_license}:/license.txt:ro"])
-    if inputs.recon_spec_aux_files and inputs.recon_spec_aux_files.exists():
-        cmd.extend(
-            [
-                "-v",
-                f"{inputs.recon_spec_aux_files}:/recon_spec_aux_files:ro",
-            ]
-        )
 
+    # Aux files: use the directory basename as the container mount point
+    # so that e.g. a local ".../responses" dir becomes "/responses" in-container
+    if inputs.recon_spec_aux_files and inputs.recon_spec_aux_files.exists():
+        aux_name = inputs.recon_spec_aux_files.name
+        cmd.extend(["-v", f"{inputs.recon_spec_aux_files}:/{aux_name}:ro"])
+
+    # FreeSurfer subjects directory
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
-        cmd.extend(["-v", f"{config.fs_subjects_dir}:/subjects:ro"])
+        cmd.extend(["-v", f"{config.fs_subjects_dir}:/fs_subjects_dir:ro"])
 
     if inputs.datasets:
         for name, path in inputs.datasets.items():
@@ -158,7 +160,7 @@ def run_qsirecon(
     # Container image
     cmd.append(config.docker_image)
 
-    # QSIRecon arguments
+    # QSIRecon positional arguments
     cmd.extend(
         [
             "/data",
@@ -166,6 +168,15 @@ def run_qsirecon(
             "participant",
             "--participant-label",
             inputs.participant,
+        ]
+    )
+
+    # Per-session reconstruction
+    if inputs.session:
+        cmd.extend(["--session-id", inputs.session])
+
+    cmd.extend(
+        [
             "--nprocs",
             str(config.nprocs),
             "--mem-mb",
@@ -179,20 +190,23 @@ def run_qsirecon(
     if inputs.datasets:
         cmd.extend(["--datasets"])
         for name in inputs.datasets.keys():
-            addition = f"{name}=/datasets/{name}"
-            cmd.extend([addition])
+            cmd.extend([f"{name}=/datasets/{name}"])
+
     # Atlases (optional - some recon specs may not require them)
     if inputs.atlases:
         cmd.extend(["--atlases", *inputs.atlases])
-    # Optional arguments
+
+    # Recon spec and aux files
     if inputs.recon_spec and inputs.recon_spec.exists():
         cmd.extend(["--recon-spec", "/recon_spec.yaml"])
 
     if inputs.recon_spec_aux_files and inputs.recon_spec_aux_files.exists():
-        cmd.extend(["--recon-spec-aux-files", "/recon_spec_aux_files"])
+        aux_name = inputs.recon_spec_aux_files.name
+        cmd.extend(["--recon-spec-aux-files", f"/{aux_name}"])
 
+    # FreeSurfer integration
     if config.fs_subjects_dir and config.fs_subjects_dir.exists():
-        cmd.extend(["--freesurfer-input", "/subjects"])
+        cmd.extend(["--fs-subjects-dir", "/fs_subjects_dir"])
 
     if config.fs_license and config.fs_license.exists():
         cmd.extend(["--fs-license-file", "/license.txt"])
@@ -202,6 +216,7 @@ def run_qsirecon(
         cmd=cmd,
         tool_name="qsirecon",
         participant=inputs.participant,
+        session=inputs.session,
         log_dir=log_dir,
     )
 
