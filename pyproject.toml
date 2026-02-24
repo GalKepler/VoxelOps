@@ -65,6 +65,9 @@ dev = [
     "pre-commit>=3.0",
 ]
 
+[project.scripts]
+voxelops = "voxelops.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/yalab-devops/VoxelOps"
 Documentation = "https://github.com/yalab-devops/VoxelOps#readme"
